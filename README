@@ -1,0 +1,8 @@
+Currently working on CPU.
+
+Porting from C to C++
+
+
+Memory management & registers need to be sorted out.
+
+Next up: GTE and Cop0
