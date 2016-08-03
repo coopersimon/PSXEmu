@@ -39,6 +39,11 @@ public:
 		if (!read_only)
 			data = in;
 	}
+
+	inline void increment(T in) {
+		if (!read_only)
+			data += in;
+	}
 };
 
 /*template <typename T>

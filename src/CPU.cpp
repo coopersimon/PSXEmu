@@ -2,11 +2,15 @@
 #include "Memory.h"
 #include "PSException.h"
 
-word signExtend(halfword immediate) {
-	
+// shifts the offset up by 2 bits, and adds to the next PC, minus one instruction
+#define branchPC(x);	sword result = shalfword(x) << 2; \
+			PC_Next.write((PC_Next.read() + result) - 4);
 
-}
-
+// shifts the jump value by 2 bits, and sets the next PC, minus one instruction
+// upper 4 bits are the same as next PC
+#define jumpPC(x);	word result = PC_Next & 0xF0000000; \
+			result |= x << 2; \
+			PC_Next.write(result - 4);
 
 /*** Instructions **************/
 
@@ -189,16 +193,23 @@ void LH(unsigned target, unsigned source, shalfword offset) {
 
 void LHU(unsigned target, unsigned source, shalfword offset) {
 	word address = reg[source].read() + offset;
-	word result = memBus.readHalfword(address) & 0xFFFF;
+	if (checkEndianness())
+		word result = memBus.readHalfwordLittle(address) & 0xFFFF;
+	else
+		word result = memBus.readHalfwordBig(address) & 0xFFFF;
 	reg[target].write(result);
 }
 
 void LW(unsigned target, unsigned source, shalfword offset) {
 	word address = reg[source].read() + offset;
-	word result = memBus.readWord(address);
+	if (checkEndianness())
+		word result = memBus.readWordLittle(address);
+	else
+		word result = memBus.readWordBig(address);
 	reg[target].write(result);
 }
 
+// following 2 instructions are in big-endian mode. I believe PSX is little endian by default
 void LWL(unsigned target, unsigned source, shalfword offset) {
 	word address = reg[source].read() + offset;
 	word byte_number = address % 4;
@@ -233,15 +244,30 @@ void LWR(unsigned target, unsigned source, shalfword offset) {
 
 
 void SB(unsigned target, unsigned source, shalfword offset) {
+	word address = reg[source].read() + offset;
+	//byte data_in = reg[target].read() & 0xFF;
+	memBus.writeByte(address, byte(reg[target].read()));
 }
 
 void SH(unsigned target, unsigned source, shalfword offset) {
+	word address = reg[source].read() + offset;
+	if (checkEndianness)
+		memBus.writeHalfwordLittle(address, halfword(reg[target].read());
+	else
+		memBus.writeHalfwordBig(address, halfword(reg[target].read());
 }
 
 void SW(unsigned target, unsigned source, shalfword offset) {
+	word address = reg[source].read() + offset;
+	if (checkEndianness)
+		memBus.writeWordLittle(address, reg[target].read());
+	else
+		memBus.writeWordBig(address, reg[target].read());
 }
 
+// next 2 instructions: little endian!
 void SWL(unsigned target, unsigned source, shalfword offset) {
+
 }
 
 void SWR(unsigned target, unsigned source, shalfword offset) {
@@ -249,68 +275,113 @@ void SWR(unsigned target, unsigned source, shalfword offset) {
 
 
 void LUI(unsigned target, halfword offset) {
+	reg[target].write(offset << 16);
 }
 
 
 /********** Branch ********************/
 void BEQ(unsigned source, unsigned target, halfword offset) {
+	if (reg[source].read() != reg[target].read())
+		return;
+	branchPC(offset);
 }
 
 void BNE(unsigned source, unsigned target, halfword offset) {
+	if (reg[source].read() == reg[target].read())
+		return;
+	branchPC(offset);
 }
 
 void BGEZ(unsigned source, halfword offset); {
+	if (reg[source].read() < 0)
+		return;
+	branchPC(offset);
 }
 
 void BGEZAL(unsigned source, halfword offset); {
+	if (reg[source].read() < 0)
+		return;
+	reg[31].write(PC.read() + 8);
+	branchPC(offset);
 }
 
 void BLTZ(unsigned source, halfword offset); {
+	if (reg[source].read() >= 0)
+		return;
+	branchPC(offset);
 }
 
 void BLTZAL(unsigned source, halfword offset); {
+	if (reg[source].read() >= 0)
+		return;
+	reg[31].write(PC.read() + 8);
+	branchPC(offset);
 }
 
 void BGTZ(unsigned source, halfword offset) {
+	if (reg[source].read() <= 0)
+		return
+	branchPC(offset);
 }
 
 void BLEZ(unsigned source, halfword offset) {
+	if (reg[source].read() > 0)
+		return;
+	branchPC(offset);
 }
 
 
 /********** Jump **********************/
 void J(word jump) {
+	jumpPC(jump);
 }
 
 void JAL(word jump) {
+	reg[31].write(PC.read() + 8);
+	jumpPC(jump);
 }
 
 void JR(unsigned source) {
+	jumpPC(reg[source].read());
 }
 
 void JALR(unsigned source) {
+	reg[31].write(PC.read() + 8);
+	jumpPC(reg[source].read());
 }
 
 
 /********** Set ***********************/
 void SLT(unsigned dest, unsigned source, unsigned target) {
+	word result = (sword(reg[source].read()) < reg[target].read());
+	reg[dest].write(result);
 }
 
 void SLTU(unsigned dest, unsigned source, unsigned target) {
+	word result = (reg[source].read() < reg[target].read());
+	reg[dest].write(result);
 }
 
 void SLTI(unsigned target, unsigned source, halfword immediate) {
+	sword imm32 = immediate;
+	word result = (sword(reg[source].read()) < imm32);
+	reg[target].write(result);
 }
 
 void SLTIU(unsigned target, unsigned source, halfword immediate) {
+	sword imm32 = immediate;
+	word result = (reg[source].read() < imm32);
+	reg[target].write(result);
 }
 
 
 /********** Special *******************/
 void SYSCALL() {
+	throw new sysException;
 }
 
 void BREAK() {
+	throw new bpException;
 }
 
 

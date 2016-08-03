@@ -34,9 +34,13 @@ class r3051 : public device {
 	// cache: 4kB instruction cache, 1kB data cache
 	//		I have no idea how much of this we need to emulate
 
+	/*** Status ***/
+	bool little_endian;	// true if cpu is in little endian mode
+	bool PC_altered;	// true if pc_next has been altered this instruction
+
 public:
 	// construct processor with 32 general purpose registers
-	r3051() : device(32) { reg[0].set_vars(true, false); };
+	r3051() : device(32), little_endian(true) { reg[0].set_vars(true, false); };
 
 	~r3051();
 
@@ -44,7 +48,11 @@ public:
 	// the instruction can then be externally decoded and the correct instruction can be called.
 	regData32 fetchPC(RAMImpl RAM);
 
-//private:
+private:
+
+	bool checkEndianness() { return little_endian; /*&& status bit*/ }
+	// done at the end of every cpu tick.
+	void incrementPCNext() { PC_Next.write(PC_Next.read() + 4); }
 
 	// instructions: might be made private
 	// f = function, o = opcode, t = target reg value, s = source reg value

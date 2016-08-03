@@ -45,10 +45,16 @@ class memoryInterface {
 public:
 	virtual byte readByte(unsigned address) = 0;
 	virtual void writeByte(unsigned address, byte in) = 0;
-	virtual halfword readHalfword(unsigned address) = 0;
-	virtual void writeHalfword(unsigned address, halfword in) = 0;
-	virtual word readWord(unsigned address) = 0;
-	virtual void writeWord(unsigned address, word in) = 0;
+
+	virtual halfword readHalfwordLittle(unsigned address) = 0;
+	virtual void writeHalfwordLittle(unsigned address, halfword in) = 0;
+	virtual halfword readHalfwordBig(unsigned address) = 0;
+	virtual void writeHalfwordBig(unsigned address, halfword in) = 0;
+
+	virtual word readWordLittle(unsigned address) = 0;
+	virtual void writeWordLittle(unsigned address, word in) = 0;
+	virtual word readWordBig(unsigned address) = 0;
+	virtual void writeWordBig(unsigned address, word in) = 0;
 
 };
 
@@ -71,10 +77,16 @@ public:
 	// all of these look up the address on the bus, translate it and operate on memory
 	byte readByte(unsigned address);
 	void writeByte(unsigned address, byte in);
-	halfword readHalfword(unsigned address);
-	void writeHalfword(unsigned address, halfword in);
-	word readWord(unsigned address);
-	void writeWord(unsigned address, word in);
+
+	halfword readHalfwordLittle(unsigned address);
+	void writeHalfwordLittle(unsigned address, halfword in);
+	halfword readHalfwordBig(unsigned address);
+	void writeHalfwordBig(unsigned address, halfword in);
+
+	word readWordLittle(unsigned address);
+	void writeWordLittle(unsigned address, word in);
+	word readWordBig(unsigned address);
+	void writeWordBig(unsigned address, word in);
 
 };
 
@@ -92,10 +104,16 @@ public:
 
 	byte readByte(unsigned address);
 	void writeByte(unsigned address, byte in);
-	halfword readHalfword(unsigned address);
-	void writeHalfword(unsigned address, halfword in);
-	word readWord(unsigned address);
-	void writeWord(unsigned address, word in);
+
+	halfword readHalfwordLittle(unsigned address);
+	void writeHalfwordLittle(unsigned address, halfword in);
+	halfword readHalfwordBig(unsigned address);
+	void writeHalfwordBig(unsigned address, halfword in);
+
+	word readWordLittle(unsigned address);
+	void writeWordLittle(unsigned address, word in);
+	word readWordBig(unsigned address);
+	void writeWordBig(unsigned address, word in);
 };
 
 #endif
