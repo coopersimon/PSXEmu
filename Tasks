@@ -1,3 +1,8 @@
+Overall:
+	Focus on little endian
+		Can do big later
+	
+
 Simon:
 	SCC working and completion
 	(shared) CPU test
