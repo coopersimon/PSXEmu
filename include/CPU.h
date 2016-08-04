@@ -12,6 +12,7 @@
 #include "Processor.h"
 #include "Coprocessor.h"
 #include "Memory.h"
+#include <vector>
 
 // class used to represent the R3051 CPU
 class cpu {
@@ -26,10 +27,7 @@ class cpu {
 	MIPSReg LO;
 
 	/*** Coprocessors ***/
-	scc cop0;		// exceptions & page table management
-	coprocessor cop1;	// empty coprocessor slot
-	gte cop2;		// graphics maths
-	coprocessor cop3;	// empty coprocessor slot
+	coprocessor * cop[4];
 
 	/*** Memory bus ***/
 	memBus memory;

@@ -389,18 +389,18 @@ void cpu::BREAK() {
 void cpu::LWCz(unsigned target, unsigned source, halfword offset, unsigned coproc) {
 	word address = gp_reg[source].read() + offset;
 	if (checkEndianness())
-		word result = memBus.readWordLittle(address);
+		word data = memBus.readWordLittle(address);
 	else
-		word result = memBus.readWordBig(address);
-	// write coproc reg "target"
+		word data = memBus.readWordBig(address);
+	cop[coproc]->writeDataReg(result, target);
 }
 
 void cpu::SWCz(unsigned target, unsigned source, halfword offset, unsigned coproc) {
 	word address = gp_reg[source].read() + offset;
 	if (checkEndianness)
-		memBus.writeWordLittle(address, /*coproc reg target*/);
+		memBus.writeWordLittle(address, cop[coproc]->readDataReg(target));
 	else
-		memBus.writeWordBig(address, /*coproc reg target*/);
+		memBus.writeWordBig(address, cop[coproc]->readDataReg(target));
 }
 
 void cpu::MTCz(unsigned target, unsigned dest, unsigned coproc) {

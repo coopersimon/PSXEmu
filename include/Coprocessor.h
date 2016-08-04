@@ -13,33 +13,42 @@
 #include "Register.h"
 #include "Exception.h"
 
+// generic empty coprocessor class
 class coprocessor {
-public:	
-	void storeDataReg(word data_in, unsigned dest_reg) { throw new cpuException; };
-	word loadDataReg(unsigned source_reg) { throw new cpuException; };
-	void storeControlReg(word data_in, unsigned dest_reg) { throw new cpuException; };
-	word loadControlReg(unsigned source_reg) { throw new cpuException; };
+public:
+	// register transfers
+	void writeDataReg(word data_in, unsigned dest_reg) { throw new cpuException; };
+	word readDataReg(unsigned source_reg) { throw new cpuException; };
+	void writeControlReg(word data_in, unsigned dest_reg) { throw new cpuException; };
+	word readControlReg(unsigned source_reg) { throw new cpuException; };
 };
 
 
-// scc: cop0
+// scc: cop0, deals with exception handling and memory management
 class scc : public coprocessor {
 	MIPSReg data_reg[16];
 public:
-	void storeDataReg(word data_in, unsigned dest_reg);
-	word loadDataReg(unsigned source_reg);
+	// register transfers
+	void writeDataReg(word data_in, unsigned dest_reg);
+	word readDataReg(unsigned source_reg);
+
+	// instructions
+	
 };
 
 
-// gte: cop2
+// gte: cop2, deals with vector and matrix transformations
 class gte : public coprocessor {
 	MIPSReg data_reg[32];
 	MIPSReg control_reg[32];
 public:
-	void storeDataReg(word data_in, unsigned dest_reg);
-	word loadDataReg(unsigned source_reg);
-	void storeControlReg(word data_in, unsigned dest_reg);
-	word loadControlReg(unsigned source_reg);
+	// register transfers
+	void writeDataReg(word data_in, unsigned dest_reg);
+	word readDataReg(unsigned source_reg);
+	void writeControlReg(word data_in, unsigned dest_reg);
+	word readControlReg(unsigned source_reg);
+
+	// instructions...
 };
 
 #endif
