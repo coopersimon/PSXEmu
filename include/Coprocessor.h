@@ -10,43 +10,36 @@
 
 // includes
 #include "Processor.h"
+#include "Register.h"
+#include "Exception.h"
 
-
-// still unsure about these. coprocessor = abstract class? with defined interface? fuck knows
-	// should it inherit from "device" class? should device even exist?
 class coprocessor {
-	
-
 public:	
-	
-
-
-
+	void storeDataReg(word data_in, unsigned dest_reg) { throw new cpuException; };
+	word loadDataReg(unsigned source_reg) { throw new cpuException; };
+	void storeControlReg(word data_in, unsigned dest_reg) { throw new cpuException; };
+	word loadControlReg(unsigned source_reg) { throw new cpuException; };
 };
-
 
 
 // scc: cop0
 class scc : public coprocessor {
+	MIPSReg data_reg[16];
 public:
-
-
-
+	void storeDataReg(word data_in, unsigned dest_reg);
+	word loadDataReg(unsigned source_reg);
 };
-
 
 
 // gte: cop2
 class gte : public coprocessor {
-
+	MIPSReg data_reg[32];
+	MIPSReg control_reg[32];
+public:
+	void storeDataReg(word data_in, unsigned dest_reg);
+	word loadDataReg(unsigned source_reg);
+	void storeControlReg(word data_in, unsigned dest_reg);
+	word loadControlReg(unsigned source_reg);
 };
-
-
-
-
-
-
-
-
 
 #endif

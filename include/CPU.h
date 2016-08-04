@@ -14,7 +14,7 @@
 #include "Memory.h"
 
 // class used to represent the R3051 CPU
-class r3051 {
+class cpu {
 	/*** Registers ***/
 	MIPSReg gp_reg[32];
 	// program counter
@@ -42,9 +42,9 @@ class r3051 {
 
 public:
 	// construct processor with 32 general purpose registers
-	r3051() : little_endian(true) { reg[0].set_vars(true, false); };
+	cpu() : little_endian(true) { reg[0].set_vars(true, false); };
 
-	~r3051();
+	~cpu();
 
 	// this method returns the current PC value, as well as fetching the next value from memory.
 	// the instruction can then be externally decoded and the correct instruction can be called.
