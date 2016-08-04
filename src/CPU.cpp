@@ -16,144 +16,144 @@
 
 /********** Add/Subtract **************/
 void r3051::ADD(unsigned dest, unsigned source, unsigned target) {
-	regData32 result = reg[source].read() + reg[target].read();
-	if (0x80000000 & (reg[source].read() ^ result)) { // if output sign and input sign are different
-		if (0x80000000 & reg[source].read() & reg[target].read()) // if the operand signs are the same
+	regData32 result = gp_gp_reg[source].read() + gp_gp_reg[target].read();
+	if (0x80000000 & (gp_reg[source].read() ^ result)) { // if output sign and input sign are different
+		if (0x80000000 & gp_reg[source].read() & gp_reg[target].read()) // if the operand signs are the same
 			throw new ovfException;
 	}
-	reg[dest].write(result);
+	gp_reg[dest].write(result);
 }
 void r3051::ADDU(unsigned dest, unsigned source, unsigned target) {
-	regData32 result = reg[source].read() + reg[target].read();
-	reg[dest].write(result);
+	regData32 result = gp_reg[source].read() + gp_reg[target].read();
+	gp_reg[dest].write(result);
 }
 void r3051::ADDI(unsigned target, unsigned source, shalfword immediate) {
-	regData32 result = reg[source].read() + immediate;
-	if (0x80000000 & (reg[source].read() ^ result)) { // if output sign and input sign are different
-		if (0x80000000 & reg[source].read() & reg[target].read()) // if the operand signs are the same
+	regData32 result = gp_reg[source].read() + immediate;
+	if (0x80000000 & (gp_reg[source].read() ^ result)) { // if output sign and input sign are different
+		if (0x80000000 & gp_reg[source].read() & gp_reg[target].read()) // if the operand signs are the same
 			throw new ovfException;
 	}
-	reg[target].write(result);
+	gp_reg[target].write(result);
 }
 void r3051::ADDIU(unsigned target, unsigned source, shalfword immediate) {
-	regData32 result = reg[source].read() + immediate;
-	reg[target].write(result);
+	regData32 result = gp_reg[source].read() + immediate;
+	gp_reg[target].write(result);
 }
 void r3051::SUB(unsigned dest, unsigned source, unsigned target) {
-	regData32 result = reg[source].read() - reg[target].read();
-	if (0x80000000 & (reg[source].read() ^ result)) { // if output sign and input sign are different
-		if (0x80000000 & (reg[source].read() ^ reg[target].read())) // if the operand signs are different
+	regData32 result = gp_reg[source].read() - gp_reg[target].read();
+	if (0x80000000 & (gp_reg[source].read() ^ result)) { // if output sign and input sign are different
+		if (0x80000000 & (gp_reg[source].read() ^ gp_reg[target].read())) // if the operand signs are different
 			throw new ovfException;
-	reg[dest].write(result);
+	gp_reg[dest].write(result);
 }
 void r3051::SUBU(unsigned dest, unsigned source, unsigned target) {
-	regData32 result = reg[source].read() - reg[target].read();
-	reg[dest].write(result);
+	regData32 result = gp_reg[source].read() - gp_reg[target].read();
+	gp_reg[dest].write(result);
 }
 
 /********** Multiply/Divide ***********/
 void MULT(unsigned source, unsigned target) {
-	sdoubleword source64 = sword(reg[source].read()); // cast to signed 32 bit value, and then cast to 64 bit value
-	sdoubleword target64 = sword(reg[target].read()); // consider including function which returns signed value? (need to cast to 64 bits either way)
+	sdoubleword source64 = sword(gp_reg[source].read()); // cast to signed 32 bit value, and then cast to 64 bit value
+	sdoubleword target64 = sword(gp_reg[target].read()); // consider including function which returns signed value? (need to cast to 64 bits either way)
 	sdoubleword result = source64 * target64;
 	LO = result & 0xFFFFFFFF;
 	HI = result >> 32;
 }
 
 void MULTU(unsigned source, unsigned target) {
-	doubleword source64 = reg[source].read(); // cast to 64 bit value
-	doubleword target64 = reg[target].read();
+	doubleword source64 = gp_reg[source].read(); // cast to 64 bit value
+	doubleword target64 = gp_reg[target].read();
 	doubleword result = source64 * target64;
 	LO = result & 0xFFFFFFFF;
 	HI = result >> 32;
 }
 
 void DIV(unsigned source, unsigned target) {
-	LO = sword(reg[source].read()) / sword(reg[target].read());
-	HI = sword(reg[source].read()) % sword(reg[target].read());
+	LO = sword(gp_reg[source].read()) / sword(gp_reg[target].read());
+	HI = sword(gp_reg[source].read()) % sword(gp_reg[target].read());
 }
 
 void DIVU(unsigned source, unsigned target) {
-	LO = reg[source].read() / reg[target].read();
-	HI = reg[source].read() % reg[target].read();
+	LO = gp_reg[source].read() / gp_reg[target].read();
+	HI = gp_reg[source].read() % gp_reg[target].read();
 }
 
 /********** Move from/to HI/LO ********/
 void MFHI(unsigned dest) {
-	reg[dest].write(HI.read());	// there are some access rules but I guess we can ignore these
+	gp_reg[dest].write(HI.read());	// there are some access rules but I guess we can ignore these
 }
 
 void MTHI(unsigned dest) {
-	HI.write(reg[dest].read());
+	HI.write(gp_reg[dest].read());
 }
 
 void MFLO(unsigned dest) {
-	reg[dest].write(LO.read());
+	gp_reg[dest].write(LO.read());
 }
 
 void MTLO(unsigned dest) {
-	LO.write(reg[dest].read());
+	LO.write(gp_reg[dest].read());
 }
 
 
 /********** Bitwise Logic *************/
 void AND(unsigned dest, unsigned source, unsigned target) {
-	word result = reg[source].read() & reg[target].read();
-	reg[dest].write(result);
+	word result = gp_reg[source].read() & gp_reg[target].read();
+	gp_reg[dest].write(result);
 }
 
 void ANDI(unsigned target, unsigned source, halfword immediate) {
 	word imm32 = immediate & 0xFFFF;
-	word result = reg[source].read() & imm32;
-	reg[target].write(result);
+	word result = gp_reg[source].read() & imm32;
+	gp_reg[target].write(result);
 }
 
 void OR(unsigned dest, unsigned source, unsigned target) {
-	word result = reg[source].read() | reg[target].read();
-	reg[dest].write(result);
+	word result = gp_reg[source].read() | gp_reg[target].read();
+	gp_reg[dest].write(result);
 }
 
 void ORI(unsigned target, unsigned source, halfword immediate) {
 	word imm32 = immediate & 0xFFFF;
-	word result = reg[source].read() | imm32;
-	reg[target].write(result);
+	word result = gp_reg[source].read() | imm32;
+	gp_reg[target].write(result);
 }
 
 void XOR(unsigned dest, unsigned source, unsigned target) {
-	word result = reg[source].read() ^ reg[target].read();
-	reg[dest].write(result);
+	word result = gp_reg[source].read() ^ gp_reg[target].read();
+	gp_reg[dest].write(result);
 }
 
 void XORI(unsigned target, unsigned source, halfword immediate) {
 	word imm32 = immediate & 0xFFFF;
-	word result = reg[source].read() ^ imm32;
-	reg[target].write(result);
+	word result = gp_reg[source].read() ^ imm32;
+	gp_reg[target].write(result);
 }
 
 void NOR(unsigned dest, unsigned source, unsigned target) {
-	word result = reg[source].read() | reg[target].read();
+	word result = gp_reg[source].read() | gp_reg[target].read();
 	result ^= 0xFFFFFFFF;
-	reg[dest].write(result);
+	gp_reg[dest].write(result);
 }
 
 
 /********** Shifts ********************/
 void SLL(unsigned dest, unsigned target, unsigned shamt) {
-	word result = reg[target].read() << shamt;
-	reg[dest].write(result);
+	word result = gp_reg[target].read() << shamt;
+	gp_reg[dest].write(result);
 }
 
 void SRL(unsigned dest, unsigned target, unsigned shamt) {
-	word result = reg[target].read() >> shamt;
+	word result = gp_reg[target].read() >> shamt;
 	word mask = (1 << (31 - shamt));
 	mask |= mask - 1;
 	result &= mask;
-	reg[dest].write(result);
+	gp_reg[dest].write(result);
 }
 
 void SRA(unsigned dest, unsigned target, unsigned shamt) {
-	word result = reg[target].read() >> shamt;
-	reg[dest].write(result);
+	word result = gp_reg[target].read() >> shamt;
+	gp_reg[dest].write(result);
 }
 
 void SLLV(unsigned dest, unsigned target, unsigned source) {
@@ -180,9 +180,9 @@ void LB(unsigned target, unsigned source, shalfword offset) {
 }
 
 void LBU(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	word result = memBus.readByte(address) & 0xFF;
-	reg[target].write(result);
+	gp_reg[target].write(result);
 }
 
 void LH(unsigned target, unsigned source, shalfword offset) {
@@ -192,26 +192,26 @@ void LH(unsigned target, unsigned source, shalfword offset) {
 }
 
 void LHU(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	if (checkEndianness())
 		word result = memBus.readHalfwordLittle(address) & 0xFFFF;
 	else
 		word result = memBus.readHalfwordBig(address) & 0xFFFF;
-	reg[target].write(result);
+	gp_reg[target].write(result);
 }
 
 void LW(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	if (checkEndianness())
 		word result = memBus.readWordLittle(address);
 	else
 		word result = memBus.readWordBig(address);
-	reg[target].write(result);
+	gp_reg[target].write(result);
 }
 
 // following 2 instructions are in big-endian mode. I believe PSX is little endian by default
 void LWL(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	word byte_number = address % 4;
 	address -= byte_number;	// align address
 
@@ -221,13 +221,13 @@ void LWL(unsigned target, unsigned source, shalfword offset) {
 	load_data <<= byte_number * 8;
 
 	// mask target so it matches the empty bytes left by the load data
-	word result = reg[target].read() & (0xFFFFFFFF >> ((4 - byte_number) * 8));
+	word result = gp_reg[target].read() & (0xFFFFFFFF >> ((4 - byte_number) * 8));
 
-	reg[target].write(result | load_data);
+	gp_reg[target].write(result | load_data);
 }
 
 void LWR(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	word byte_number = address % 4;
 	address -= byte_number;	// align address
 
@@ -237,32 +237,32 @@ void LWR(unsigned target, unsigned source, shalfword offset) {
 	load_data >>= (3 - byte_number) * 8;
 
 	// mask target so it matches the empty bytes left by the load data
-	word result = reg[target].read() & (0xFFFFFFFF << ((1 + byte_number) * 8));
+	word result = gp_reg[target].read() & (0xFFFFFFFF << ((1 + byte_number) * 8));
 
-	reg[target].write(result | load_data);
+	gp_reg[target].write(result | load_data);
 }
 
 
 void SB(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
-	//byte data_in = reg[target].read() & 0xFF;
-	memBus.writeByte(address, byte(reg[target].read()));
+	word address = gp_reg[source].read() + offset;
+	//byte data_in = gp_reg[target].read() & 0xFF;
+	memBus.writeByte(address, byte(gp_reg[target].read()));
 }
 
 void SH(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	if (checkEndianness)
-		memBus.writeHalfwordLittle(address, halfword(reg[target].read());
+		memBus.writeHalfwordLittle(address, halfword(gp_reg[target].read());
 	else
-		memBus.writeHalfwordBig(address, halfword(reg[target].read());
+		memBus.writeHalfwordBig(address, halfword(gp_reg[target].read());
 }
 
 void SW(unsigned target, unsigned source, shalfword offset) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	if (checkEndianness)
-		memBus.writeWordLittle(address, reg[target].read());
+		memBus.writeWordLittle(address, gp_reg[target].read());
 	else
-		memBus.writeWordBig(address, reg[target].read());
+		memBus.writeWordBig(address, gp_reg[target].read());
 }
 
 // next 2 instructions: little endian!
@@ -275,57 +275,57 @@ void SWR(unsigned target, unsigned source, shalfword offset) {
 
 
 void LUI(unsigned target, halfword offset) {
-	reg[target].write(offset << 16);
+	gp_reg[target].write(offset << 16);
 }
 
 
 /********** Branch ********************/
 void BEQ(unsigned source, unsigned target, halfword offset) {
-	if (reg[source].read() != reg[target].read())
+	if (gp_reg[source].read() != gp_reg[target].read())
 		return;
 	branchPC(offset);
 }
 
 void BNE(unsigned source, unsigned target, halfword offset) {
-	if (reg[source].read() == reg[target].read())
+	if (gp_reg[source].read() == gp_reg[target].read())
 		return;
 	branchPC(offset);
 }
 
 void BGEZ(unsigned source, halfword offset); {
-	if (reg[source].read() < 0)
+	if (gp_reg[source].read() < 0)
 		return;
 	branchPC(offset);
 }
 
 void BGEZAL(unsigned source, halfword offset); {
-	if (reg[source].read() < 0)
+	if (gp_reg[source].read() < 0)
 		return;
-	reg[31].write(PC.read() + 8);
+	gp_reg[31].write(PC.read() + 8);
 	branchPC(offset);
 }
 
 void BLTZ(unsigned source, halfword offset); {
-	if (reg[source].read() >= 0)
+	if (gp_reg[source].read() >= 0)
 		return;
 	branchPC(offset);
 }
 
 void BLTZAL(unsigned source, halfword offset); {
-	if (reg[source].read() >= 0)
+	if (gp_reg[source].read() >= 0)
 		return;
-	reg[31].write(PC.read() + 8);
+	gp_reg[31].write(PC.read() + 8);
 	branchPC(offset);
 }
 
 void BGTZ(unsigned source, halfword offset) {
-	if (reg[source].read() <= 0)
+	if (gp_reg[source].read() <= 0)
 		return
 	branchPC(offset);
 }
 
 void BLEZ(unsigned source, halfword offset) {
-	if (reg[source].read() > 0)
+	if (gp_reg[source].read() > 0)
 		return;
 	branchPC(offset);
 }
@@ -337,41 +337,41 @@ void J(word jump) {
 }
 
 void JAL(word jump) {
-	reg[31].write(PC.read() + 8);
+	gp_reg[31].write(PC.read() + 8);
 	jumpPC(jump);
 }
 
 void JR(unsigned source) {
-	jumpPC(reg[source].read());
+	jumpPC(gp_reg[source].read());
 }
 
 void JALR(unsigned source) {
-	reg[31].write(PC.read() + 8);
-	jumpPC(reg[source].read());
+	gp_reg[31].write(PC.read() + 8);
+	jumpPC(gp_reg[source].read());
 }
 
 
 /********** Set ***********************/
 void SLT(unsigned dest, unsigned source, unsigned target) {
-	word result = (sword(reg[source].read()) < reg[target].read());
-	reg[dest].write(result);
+	word result = (sword(gp_reg[source].read()) < gp_reg[target].read());
+	gp_reg[dest].write(result);
 }
 
 void SLTU(unsigned dest, unsigned source, unsigned target) {
-	word result = (reg[source].read() < reg[target].read());
-	reg[dest].write(result);
+	word result = (gp_reg[source].read() < gp_reg[target].read());
+	gp_reg[dest].write(result);
 }
 
 void SLTI(unsigned target, unsigned source, halfword immediate) {
 	sword imm32 = immediate;
-	word result = (sword(reg[source].read()) < imm32);
-	reg[target].write(result);
+	word result = (sword(gp_reg[source].read()) < imm32);
+	gp_reg[target].write(result);
 }
 
 void SLTIU(unsigned target, unsigned source, halfword immediate) {
 	sword imm32 = immediate;
-	word result = (reg[source].read() < imm32);
-	reg[target].write(result);
+	word result = (gp_reg[source].read() < imm32);
+	gp_reg[target].write(result);
 }
 
 
@@ -387,7 +387,7 @@ void BREAK() {
 
 /********** Coprocessor ***************/
 void LWCz(unsigned target, unsigned source, halfword offset, unsigned coproc) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	if (checkEndianness())
 		word result = memBus.readWordLittle(address);
 	else
@@ -396,7 +396,7 @@ void LWCz(unsigned target, unsigned source, halfword offset, unsigned coproc) {
 }
 
 void SWCz(unsigned target, unsigned source, halfword offset, unsigned coproc) {
-	word address = reg[source].read() + offset;
+	word address = gp_reg[source].read() + offset;
 	if (checkEndianness)
 		memBus.writeWordLittle(address, /*coproc reg target*/);
 	else

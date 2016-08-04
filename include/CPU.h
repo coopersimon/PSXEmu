@@ -14,8 +14,9 @@
 #include "Memory.h"
 
 // class used to represent the R3051 CPU
-class r3051 : public device {
+class r3051 {
 	/*** Registers ***/
+	MIPSReg gp_reg[32];
 	// program counter
 	MIPSReg PC;
 	// next value of program counter
@@ -38,11 +39,10 @@ class r3051 : public device {
 
 	/*** Status ***/
 	bool little_endian;	// true if cpu is in little endian mode
-	bool PC_altered;	// true if pc_next has been altered this instruction
 
 public:
 	// construct processor with 32 general purpose registers
-	r3051() : device(32), little_endian(true) { reg[0].set_vars(true, false); };
+	r3051() : little_endian(true) { reg[0].set_vars(true, false); };
 
 	~r3051();
 

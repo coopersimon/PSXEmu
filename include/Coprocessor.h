@@ -29,7 +29,6 @@ public:
 // scc: cop0
 class scc : public coprocessor {
 public:
-	scc() : device(32) {}; // data registers
 
 
 
