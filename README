@@ -6,3 +6,8 @@ Porting from C to C++
 Memory management & registers need to be sorted out.
 
 Next up: GTE and Cop0
+
+
+Documentation:
+	http://gamehacking.org/faqs/PSX.pdf
+
