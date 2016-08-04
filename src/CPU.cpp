@@ -385,3 +385,37 @@ void BREAK() {
 }
 
 
+/********** Coprocessor ***************/
+void LWCz(unsigned target, unsigned source, halfword offset, unsigned coproc) {
+	word address = reg[source].read() + offset;
+	if (checkEndianness())
+		word result = memBus.readWordLittle(address);
+	else
+		word result = memBus.readWordBig(address);
+	// write coproc reg "target"
+}
+
+void SWCz(unsigned target, unsigned source, halfword offset, unsigned coproc) {
+	word address = reg[source].read() + offset;
+	if (checkEndianness)
+		memBus.writeWordLittle(address, /*coproc reg target*/);
+	else
+		memBus.writeWordBig(address, /*coproc reg target*/);
+}
+
+void MTCz(unsigned target, unsigned dest, unsigned coproc) {
+	// write coproc reg "dest"
+}
+
+void MFCz(unsigned target, unsigned dest, unsigned coproc) {
+	// write proc reg "dest"
+}
+
+void CTCz(unsigned target, unsigned dest, unsigned coproc) {
+	// write control coproc reg "dest"
+}
+
+void CFCz(unsigned target, unsigned dest, unsigned coproc) {
+	// write proc reg "dest"
+}
+

@@ -25,8 +25,10 @@ class r3051 : public device {
 	MIPSReg LO;
 
 	/*** Coprocessors ***/
-	scc cop0;
-	gte cop2;
+	scc cop0;		// exceptions & page table management
+	coprocessor cop1;	// empty coprocessor slot
+	gte cop2;		// graphics maths
+	coprocessor cop3;	// empty coprocessor slot
 
 	/*** Memory bus ***/
 	memBus memory;
@@ -138,21 +140,13 @@ private:
 	void BREAK(); // f 0x0D
 
 	/********** Coprocessor ***************/
-	void LWC0(unsigned target, halfword immediate); // o 0x30
-	void SWC0(unsigned target, halfword immediate); // o 0x38
-	void MTC0(unsigned target, unsigned dest); // o 0x10, s 0x04
-	void MFC0(unsigned target, unsigned dest); // o 0x10, s 0x00
-	void CTC0(unsigned target, unsigned dest); // o 0x10, s 0x06
-	void CFC0(unsigned target, unsigned dest); // o 0x10, s 0x02
-	//void COP0(void); // o 0x10
-
-	void LWC2(unsigned target, halfword immediate); // o 0x32
-	void SWC2(unsigned target, halfword immediate); // o 0x3A
-	void MTC2(unsigned target, unsigned dest); // o 0x12, s 0x04
-	void MFC2(unsigned target, unsigned dest); // o 0x12, s 0x00
-	void CTC2(unsigned target, unsigned dest); // o 0x12, s 0x06
-	void CFC2(unsigned target, unsigned dest); // o 0x12, s 0x02
-	//void COP2(void); // o 0x12
+	void LWCz(unsigned target, unsigned source, halfword offset, unsigned coproc); // o 0x30-3
+	void SWCz(unsigned target, unsigned source, halfword offset, unsigned coproc); // o 0x38-B
+	void MTCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x04
+	void MFCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x00
+	void CTCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x06
+	void CFCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x02
+	//void COPz(unsigned instruction); // o 0x10-3 - called on the coprocessor directly
 
 };
 
