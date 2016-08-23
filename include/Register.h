@@ -11,7 +11,8 @@
 #include <cstdint>
 
 template <typename T>
-class regCommon {
+class regCommon
+{
 	// data of register
 	T data;
 	// options
@@ -23,24 +24,28 @@ public:
 
 	regCommon(T set_data) : data(set_data), set_zero(false), read_only(false) {};
 
-	void set_vars(bool sz, bool ro) {
+	void set_vars(bool sz, bool ro)
+	{
 		set_zero = sz;
 		read_only = ro;
 	}
 
-	inline T read() {
+	inline T read()
+	{
 		if (!set_zero)
 			return data;
 		else
 			return 0;
 	}
 
-	inline void write(T in) {
+	inline void write(T in)
+	{
 		if (!read_only)
 			data = in;
 	}
 
-	inline void increment(T in) {
+	inline void increment(T in)
+	{
 		if (!read_only)
 			data += in;
 	}

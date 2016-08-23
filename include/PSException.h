@@ -8,111 +8,138 @@
  *
  */
 
-class psException {
+class psException
+{
 	// get the code of the exception
 	virtual const unsigned execode() const throw();
 
 };
 
-class intException : public psException {
+class intException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 0;
 	}
 
 };
 
-class modException : public psException {
+class modException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 1;
 	}
 
 };
 
-class tlblException : public psException {
+class tlblException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 2;
 	}
 
 };
 
-class tlbsException : public psException {
+class tlbsException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 3;
 	}
 
 };
 
-class adelException : public psException {
+class adelException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 4;
 	}
 
 };
 
-class adesException : public psException {
+class adesException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 5;
 	}
 
 };
 
-class ibeException : public psException {
+class ibeException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 6;
 	}
 
 };
 
-class dbeException : public psException {
+class dbeException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 7;
 	}
 
 };
 
-class sysException : public psException {
+class sysException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 8;
 	}
 
 };
 
-class bpException : public psException {
+class bpException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 9;
 	}
 
 };
 
-class riException : public psException {
+class riException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 10;
 	}
 
 };
 
-class cpuException : public psException {
+class cpuException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 11;
 	}
 
 };
 
-class ovfException : public psException {
+class ovfException : public psException
+{
 
-	const unsigned execode() const throw() {
+	const unsigned execode() const throw()
+	{
 		return 12;
 	}
 

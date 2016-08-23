@@ -1,20 +1,23 @@
 #include "Memory.h"
-#include <iostream>
+//#include <iostream>
 
 // dealing with multiple bytes might need improvement. this needs to be quick.
 // these also need to be carefully tested. casting etc
 
-byte RAMImpl::readByte(unsigned address) {
+byte RAMImpl::readByte(unsigned address)
+{
 	byte out;
 	read(maskAddress(address), out);
 	return out;
 }
 
-void RAMImpl::writeByte(unsigned address, byte in) {
+void RAMImpl::writeByte(unsigned address, byte in)
+{
 	write(maskAddress(address), in);
 }
 
-halfword RAMImpl::readHalfwordLittle(unsigned address) {
+halfword RAMImpl::readHalfwordLittle(unsigned address)
+{
 	if (address % 2)
 		throw new adelException;
 	byte bytes[2];
@@ -23,7 +26,8 @@ halfword RAMImpl::readHalfwordLittle(unsigned address) {
 	return bytes[0] | (bytes[1] << 8);
 }
 
-void RAMImpl::writeHalfwordLittle(unsigned address, halfword in) {
+void RAMImpl::writeHalfwordLittle(unsigned address, halfword in)
+{
 	if (address % 2)
 		throw new adesException;
 	byte bytes[2];
@@ -33,7 +37,8 @@ void RAMImpl::writeHalfwordLittle(unsigned address, halfword in) {
 	writeMultiple(address, bytes, 2);
 }
 
-halfword RAMImpl::readHalfwordBig(unsigned address) {
+halfword RAMImpl::readHalfwordBig(unsigned address)
+{
 	if (address % 2)
 		throw new adelException;
 	byte bytes[2];
@@ -42,7 +47,8 @@ halfword RAMImpl::readHalfwordBig(unsigned address) {
 	return bytes[1] | (bytes[0] << 8);
 }
 
-void RAMImpl::writeHalfwordBig(unsigned address, halfword in) {
+void RAMImpl::writeHalfwordBig(unsigned address, halfword in)
+{
 	if (address % 2)
 		throw new adesException;
 	byte bytes[2];
@@ -52,7 +58,8 @@ void RAMImpl::writeHalfwordBig(unsigned address, halfword in) {
 	writeMultiple(address, bytes, 2);
 }
 
-word RAMImpl::readWordLittle(unsigned address) {
+word RAMImpl::readWordLittle(unsigned address)
+{
 	if (address % 4)
 		throw new adelException;
 	byte bytes[4];
@@ -61,7 +68,8 @@ word RAMImpl::readWordLittle(unsigned address) {
 	return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
 }
 
-void RAMImpl::writeWordLittle(unsigned address, word in) {
+void RAMImpl::writeWordLittle(unsigned address, word in)
+{
 	if (address % 4)
 		throw new adesException;
 	byte bytes[4];
@@ -73,7 +81,8 @@ void RAMImpl::writeWordLittle(unsigned address, word in) {
 	writeMultiple(address, bytes, 4);
 }
 
-word RAMImpl::readWordBig(unsigned address) {
+word RAMImpl::readWordBig(unsigned address)
+{
 	if (address % 4)
 		throw new adelException;
 	byte bytes[4];
@@ -82,7 +91,8 @@ word RAMImpl::readWordBig(unsigned address) {
 	return bytes[3] | (bytes[2] << 8) | (bytes[1] << 16) | (bytes[0] << 24);
 }
 
-void RAMImpl::writeWordBig(unsigned address, word in) {
+void RAMImpl::writeWordBig(unsigned address, word in)
+{
 	if (address % 4)
 		throw new adesException;
 	byte bytes[4];

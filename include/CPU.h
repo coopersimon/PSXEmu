@@ -15,7 +15,8 @@
 #include <vector>
 
 // class used to represent the R3051 CPU
-class cpu {
+class cpu
+{
 	/*** Registers ***/
 	MIPSReg gp_reg[32];
 	// program counter

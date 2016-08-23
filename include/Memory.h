@@ -24,7 +24,8 @@ typedef int64_t		sdoubleword;
 
 // this represents any kind of memory
 template<typename T>
-class rawMemory {
+class rawMemory
+{
 	// data stored in bytes
 	T* data;
 
@@ -41,7 +42,8 @@ protected:
 
 // this represents the public memory API for loading different mem sizes.
 // basically used when load/storing within the CPU
-class memoryInterface {
+class memoryInterface
+{
 public:
 	virtual byte readByte(unsigned address) = 0;
 	virtual void writeByte(unsigned address, byte in) = 0;
@@ -59,9 +61,11 @@ public:
 };
 
 // the bus contains a list of pointers to memory devices so they can be accessed from within processor classes
-class memBus : public memoryInterface {
+class memBus : public memoryInterface
+{
 	// list of memory devices and their addressing ranges
-	struct memoryPointer{
+	struct memoryPointer
+	{
 		unsigned address_start;
 		unsigned address_end;
 		memoryInterface *memory_device;
@@ -91,10 +95,12 @@ public:
 };
 
 // this represents RAM
-class RAMImpl : public rawMemory<byte>, public memoryInterface {
+class RAMImpl : public rawMemory<byte>, public memoryInterface
+{
 	unsigned addr_bits;
 
-	inline unsigned maskAddress(unsigned address) {
+	inline unsigned maskAddress(unsigned address)
+	{
 		return address & ((1 << addr_bits) | ((1 << addr_bits) - 1));
 	}
 
