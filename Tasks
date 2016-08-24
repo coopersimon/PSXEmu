@@ -1,7 +1,6 @@
 Overall:
 	Focus on little endian
-		Can do big later
-	
+		Can do big later	
 
 Simon:
 	SCC working and completion
@@ -13,5 +12,6 @@ Diederik:
 	Start basics
 	(shared) CPU test
 	Memory test
+	Build testbench
 
 Jesus:
