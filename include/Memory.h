@@ -14,13 +14,13 @@
 
 // types TODO: potentially add an address type
 typedef uint8_t		byte;
-typedef int8_t		sbyte;
+typedef int8_t		s_byte;
 typedef uint16_t	halfword;
-typedef int16_t		shalfword;
+typedef int16_t		s_halfword;
 typedef uint32_t	word;
-typedef int32_t		sword;
+typedef int32_t		s_word;
 typedef uint64_t	doubleword;
-typedef int64_t		sdoubleword;
+typedef int64_t		s_doubleword;
 
 // this represents any kind of memory
 template<typename T>

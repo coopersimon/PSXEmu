@@ -9,9 +9,8 @@
  */
 
 // includes
-#include "Processor.h"
 #include "Register.h"
-#include "Exception.h"
+#include "PSException.h"
 
 // generic empty coprocessor class
 class coprocessor
@@ -29,7 +28,7 @@ public:
 // scc: cop0, deals with exception handling and memory management
 class scc : public coprocessor
 {
-	MIPSReg data_reg[16];
+	reg32 data_reg[16];
 public:
 	// register transfers
 	void writeDataReg(word data_in, unsigned dest_reg);
@@ -49,8 +48,8 @@ private:
 // gte: cop2, deals with vector and matrix transformations
 class gte : public coprocessor
 {
-	MIPSReg data_reg[32];
-	MIPSReg control_reg[32];
+	reg32 data_reg[32];
+	reg32 control_reg[32];
 
 public:
 	// register transfers

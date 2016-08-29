@@ -8,7 +8,7 @@
  *
  */
 
-#include <cstdint>
+#include "Memory.h"
 
 template <typename T>
 class regCommon
@@ -24,7 +24,7 @@ public:
 
 	regCommon(T set_data) : data(set_data), set_zero(false), read_only(false) {};
 
-	void set_vars(bool sz, bool ro)
+	void setVars(bool sz, bool ro)
 	{
 		set_zero = sz;
 		read_only = ro;
@@ -70,11 +70,8 @@ regCommon<T> operator+(regCommon<T> lhs, regCommon<T> rhs) {
 }*/
 
 
-typedef uint32_t regData32;
-typedef uint16_t regData16;
-
-typedef regCommon<regData32> reg32;
-typedef regCommon<regData16> reg16;
+typedef regCommon<word> reg32;
+typedef regCommon<halfword> reg16;
 
 
 #endif

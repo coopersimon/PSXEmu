@@ -1,6 +1,8 @@
 #ifndef PS_EXCEPTION_H
 #define PS_EXCEPTION_H
 
+#include <stdexcept>
+
 /*
  *	PSException.h
  *
@@ -11,14 +13,14 @@
 class psException
 {
 	// get the code of the exception
-	virtual const unsigned execode() const throw();
+	virtual const unsigned execode() = 0;
 
 };
 
 class intException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 0;
 	}
@@ -28,7 +30,7 @@ class intException : public psException
 class modException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 1;
 	}
@@ -38,7 +40,7 @@ class modException : public psException
 class tlblException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 2;
 	}
@@ -48,7 +50,7 @@ class tlblException : public psException
 class tlbsException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 3;
 	}
@@ -58,7 +60,7 @@ class tlbsException : public psException
 class adelException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 4;
 	}
@@ -68,7 +70,7 @@ class adelException : public psException
 class adesException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 5;
 	}
@@ -78,7 +80,7 @@ class adesException : public psException
 class ibeException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 6;
 	}
@@ -88,7 +90,7 @@ class ibeException : public psException
 class dbeException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 7;
 	}
@@ -98,7 +100,7 @@ class dbeException : public psException
 class sysException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 8;
 	}
@@ -108,7 +110,7 @@ class sysException : public psException
 class bpException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 9;
 	}
@@ -118,7 +120,7 @@ class bpException : public psException
 class riException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 10;
 	}
@@ -128,7 +130,7 @@ class riException : public psException
 class cpuException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 11;
 	}
@@ -138,7 +140,7 @@ class cpuException : public psException
 class ovfException : public psException
 {
 
-	const unsigned execode() const throw()
+	const unsigned execode()
 	{
 		return 12;
 	}

@@ -18,5 +18,23 @@ void scc::executeInstruction(unsigned instruction)
 {
 	switch (instruction)
 	{
+	case 1:
+		TLBR();
+		break;
+	case 2:
+		TLBWI();
+		break;
+	case 6:
+		TLBWR();
+		break;
+	case 8:
+		TLBP();
+		break;
+	case 16:
+		RFE();
+		break;
+	default:
+		throw new PSException; // TODO: which exception?
+		break;
 	}
 }
