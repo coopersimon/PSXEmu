@@ -43,11 +43,12 @@ class cpu
 
 	/*** Status ***/
 	bool little_endian;	// true if cpu is in little endian mode
+	unsigned instruction;
 
 	/*** Function Pointers ***/
-	std::vector<std::function<void(cpu*, unsigned, unsigned, unsigned)>> r_type;
-	//std::vector<std::function<void(cpu*, unsigned, unsigned, halfword)>> i_type;
-	//std::vector<std::function<void(word)>> j_type;
+	std::vector<std::function<void(cpu*)>> r_type;
+	std::vector<std::function<void(cpu*)>> i_type;
+	std::vector<std::function<void(cpu*)>> bcond_type;
 
 
 public:
@@ -66,100 +67,109 @@ private:
 	// done at the end of every cpu tick.
 	void incrementPCNext() { PC_Next.write(PC_Next.read() + 4); }
 
+	// instruction decoding
+	inline unsigned source() { return (instruction >> 21) & 0x1F; }
+	inline unsigned target() { return (instruction >> 16) & 0x1F; }
+	inline unsigned dest() { return (instruction >> 11) & 0x1F; }
+	inline unsigned shamt() { return (instruction >> 6) & 0x1F; }
+	inline halfword imm() { return instruction & 0xFFFF; }
+	inline unsigned jump() { return instruction & 0x3FFFFFF; }
+	inline unsigned coproc() { return (instruction >> 26) & 0x3; }
+
 	// instructions
-	void RESERVED(unsigned, unsigned, unsigned);
-	void RESERVED(unsigned, unsigned, halfword);
+	void RESERVED();
 
 	// f = function, o = opcode, t = target reg value, s = source reg value
 
 	/********** Add/Subtract **************/
-	void ADD(unsigned source, unsigned target, unsigned dest); // f 0x20
-	void ADDU(unsigned source, unsigned target, unsigned dest); // f 0x21
-	void ADDI(unsigned target, unsigned source, s_halfword immediate); // o 0x08
-	void ADDIU(unsigned target, unsigned source, s_halfword immediate); // o 0x09
-	void SUB(unsigned source, unsigned target, unsigned dest); // f 0x22
-	void SUBU(unsigned source, unsigned target, unsigned dest); // f 0x23
+	void ADD(); // f 0x20
+	void ADDU(); // f 0x21
+	void ADDI(); // o 0x08
+	void ADDIU(); // o 0x09
+	void SUB(); // f 0x22
+	void SUBU(); // f 0x23
 
 	/********** Multiply/Divide ***********/
-	void MULT(unsigned source, unsigned target, unsigned); // f 0x18
-	void MULTU(unsigned source, unsigned target, unsigned); // f 0x19
-	void DIV(unsigned source, unsigned target, unsigned); // f 0x1A
-	void DIVU(unsigned source, unsigned target, unsigned); // f 0x1B
+	void MULT(); // f 0x18
+	void MULTU(); // f 0x19
+	void DIV(); // f 0x1A
+	void DIVU(); // f 0x1B
 
 	/********** Move from/to HI/LO ********/
-	void MFHI(unsigned, unsigned, unsigned dest); // f 0x10
-	void MTHI(unsigned, unsigned, unsigned dest); // f 0x11
-	void MFLO(unsigned, unsigned, unsigned dest); // f 0x12
-	void MTLO(unsigned, unsigned, unsigned dest); // f 0x13
+	void MFHI(); // f 0x10
+	void MTHI(); // f 0x11
+	void MFLO(); // f 0x12
+	void MTLO(); // f 0x13
 
 	/********** Bitwise Logic *************/
-	void AND(unsigned source, unsigned target, unsigned dest); // f 0x24
-	void ANDI(unsigned target, unsigned source, s_halfword immediate); // o 0x0C
-	void OR(unsigned source, unsigned target, unsigned dest); // f 0x25
-	void ORI(unsigned target, unsigned source, s_halfword immediate); // o 0x0D
-	void XOR(unsigned source, unsigned target, unsigned dest); // f 0x26
-	void XORI(unsigned target, unsigned source, s_halfword immediate); // o 0x0E
-	void NOR(unsigned source, unsigned target, unsigned dest); // f 0x27
+	void AND(); // f 0x24
+	void ANDI(); // o 0x0C
+	void OR(); // f 0x25
+	void ORI(); // o 0x0D
+	void XOR(); // f 0x26
+	void XORI(); // o 0x0E
+	void NOR(); // f 0x27
 
 	/********** Shifts ********************/
-	void SLL(unsigned shamt, unsigned target, unsigned dest); // f 0x00
-	void SRL(unsigned shamt, unsigned target, unsigned dest); // f 0x02
-	void SRA(unsigned shamt, unsigned target, unsigned dest); // f 0x03
-	void SLLV(unsigned source, unsigned target, unsigned dest); // f 0x04
-	void SRLV(unsigned source, unsigned target, unsigned dest); // f 0x06
-	void SRAV(unsigned source, unsigned target, unsigned dest); // f 0x07
+	void SLL(); // f 0x00
+	void SRL(); // f 0x02
+	void SRA(); // f 0x03
+	void SLLV(); // f 0x04
+	void SRLV(); // f 0x06
+	void SRAV(); // f 0x07
 
 	/********** Load/Store ****************/
-	void LB(unsigned target, unsigned source, s_halfword offset); // o 0x20
-	void LBU(unsigned target, unsigned source, s_halfword offset); // o 0x24
-	void LH(unsigned target, unsigned source, s_halfword offset); // o 0x21
-	void LHU(unsigned target, unsigned source, s_halfword offset); // o 0x25
-	void LW(unsigned target, unsigned source, s_halfword offset); // o 0x23
-	void LWL(unsigned target, unsigned source, s_halfword offset); // o 0x22
-	void LWR(unsigned target, unsigned source, s_halfword offset); // o 0x26
+	void LB(); // o 0x20
+	void LBU(); // o 0x24
+	void LH(); // o 0x21
+	void LHU(); // o 0x25
+	void LW(); // o 0x23
+	void LWL(); // o 0x22
+	void LWR(); // o 0x26
 
-	void SB(unsigned target, unsigned source, s_halfword offset); // o 0x28
-	void SH(unsigned target, unsigned source, s_halfword offset); // o 0x29
-	void SW(unsigned target, unsigned source, s_halfword offset); // o 0x2B
-	void SWL(unsigned target, unsigned source, s_halfword offset); // o 0x2A
-	void SWR(unsigned target, unsigned source, s_halfword offset); // o 0x2E
+	void SB(); // o 0x28
+	void SH(); // o 0x29
+	void SW(); // o 0x2B
+	void SWL(); // o 0x2A
+	void SWR(); // o 0x2E
 
-	void LUI(unsigned target, unsigned, s_halfword offset); // o 0x0F
+	void LUI(); // o 0x0F
 
 	/********** Branch ********************/
-	void BEQ(unsigned target, unsigned source, s_halfword offset); // o 0x04
-	void BNE(unsigned target, unsigned source, s_halfword offset); // o 0x05
-	void BGEZ(unsigned, unsigned source, s_halfword offset); // o 0x01, t 0x01
-	void BGEZAL(unsigned, unsigned source, s_halfword offset); // o 0x01, t 0x11
-	void BLTZ(unsigned, unsigned source, s_halfword offset); // o 0x01, t 0x00
-	void BLTZAL(unsigned, unsigned source, s_halfword offset); // o 0x01, t 0x10
-	void BGTZ(unsigned, unsigned source, s_halfword offset); // o 0x07
-	void BLEZ(unsigned, unsigned source, s_halfword offset); // o 0x06
+	void BEQ(); // o 0x04
+	void BNE(); // o 0x05
+	void BCOND(); // o 0x01
+	void BGEZ(); // o 0x01, t 0x01
+	void BGEZAL(); // o 0x01, t 0x11
+	void BLTZ(); // o 0x01, t 0x00
+	void BLTZAL(); // o 0x01, t 0x10
+	void BGTZ(); // o 0x07
+	void BLEZ(); // o 0x06
 
 	/********** Jump **********************/
-	void J(word jump); // o 0x02
-	void JAL(word jump); // o 0x03
-	void JR(unsigned source, unsigned, unsigned); // f 0x08
-	void JALR(unsigned source, unsigned, unsigned); // f 0x09
+	void J(); // o 0x02
+	void JAL(); // o 0x03
+	void JR(); // f 0x08
+	void JALR(); // f 0x09
 
 	/********** Set ***********************/
-	void SLT(unsigned source, unsigned target, unsigned dest); // f 0x2A
-	void SLTU(unsigned source, unsigned target, unsigned dest); // f 0x2B
-	void SLTI(unsigned target, unsigned source, s_halfword immediate); // o 0x0A
-	void SLTIU(unsigned target, unsigned source, s_halfword immediate); // o 0x0B
+	void SLT(); // f 0x2A
+	void SLTU(); // f 0x2B
+	void SLTI(); // o 0x0A
+	void SLTIU(); // o 0x0B
 
 	/********** Special *******************/
 	void SYSCALL(); // f 0x0C
 	void BREAK(); // f 0x0D
 
 	/********** Coprocessor ***************/
-	/*void LWCz(unsigned target, unsigned source, halfword offset, unsigned coproc); // o 0x30-3
-	void SWCz(unsigned target, unsigned source, halfword offset, unsigned coproc); // o 0x38-B
-	void MTCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x04
-	void MFCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x00
-	void CTCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x06
-	void CFCz(unsigned target, unsigned dest, unsigned coproc); // o 0x10-3, s 0x02*/
-	//void COPz(unsigned instruction); // o 0x10-3 - called on the coprocessor directly
+	void LWCz(); // o 0x30-3
+	void SWCz(); // o 0x38-B
+	//void MTCz(); // o 0x10-3, s 0x04
+	//void MFCz(); // o 0x10-3, s 0x00
+	//void CTCz(); // o 0x10-3, s 0x06
+	//void CFCz(); // o 0x10-3, s 0x02*/
+	void COPz(); // o 0x10-3 - called on the coprocessor directly
 
 };
 

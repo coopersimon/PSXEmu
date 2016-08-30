@@ -10,137 +10,140 @@
  *
  */
 
-class psException
+struct psException
 {
 	// get the code of the exception
-	virtual const unsigned execode() = 0;
+	const int execode()
+	{
+		return -1;
+	}
 
 };
 
-class intException : public psException
+struct intException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 0;
 	}
 
 };
 
-class modException : public psException
+struct modException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 1;
 	}
 
 };
 
-class tlblException : public psException
+struct tlblException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 2;
 	}
 
 };
 
-class tlbsException : public psException
+struct tlbsException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 3;
 	}
 
 };
 
-class adelException : public psException
+struct adelException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 4;
 	}
 
 };
 
-class adesException : public psException
+struct adesException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 5;
 	}
 
 };
 
-class ibeException : public psException
+struct ibeException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 6;
 	}
 
 };
 
-class dbeException : public psException
+struct dbeException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 7;
 	}
 
 };
 
-class sysException : public psException
+struct sysException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 8;
 	}
 
 };
 
-class bpException : public psException
+struct bpException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 9;
 	}
 
 };
 
-class riException : public psException
+struct riException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 10;
 	}
 
 };
 
-class cpuException : public psException
+struct cpuException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 11;
 	}
 
 };
 
-class ovfException : public psException
+struct ovfException : public psException
 {
 
-	const unsigned execode()
+	const int execode()
 	{
 		return 12;
 	}
