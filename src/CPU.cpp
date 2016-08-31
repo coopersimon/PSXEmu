@@ -110,7 +110,7 @@ void cpu::stepCPU()
 			i_type[opcode](this);
 		}
 	}
-	catch (psException e) {
+	catch (psException &e) {
 		std::cout << e.execode() << std::endl;
 	}
 

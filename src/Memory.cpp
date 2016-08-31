@@ -5,13 +5,6 @@
 // TODO: dealing with multiple bytes might need improvement. this needs to be quick.
 // these also need to be carefully tested. casting etc
 
-byte RAMImpl::readByte(unsigned address)
-{
-	byte out;
-	read(maskAddress(address), out);
-	return out;
-}
-
 int memBus::find(unsigned address)
 {
 	for (int i = 0; i < bus_list.size(); i++)
@@ -46,6 +39,16 @@ void memBus::writeHalfwordLittle(unsigned address, halfword in)
 	bus_list[find(address)].memory_device->writeHalfwordLittle(address, in);
 }
 
+halfword memBus::readHalfwordBig(unsigned address)
+{
+	bus_list[find(address)].memory_device->readHalfwordBig(address);
+}
+
+void memBus::writeHalfwordBig(unsigned address, halfword in)
+{
+	bus_list[find(address)].memory_device->writeHalfwordBig(address, in);
+}
+
 word memBus::readWordLittle(unsigned address)
 {
 	bus_list[find(address)].memory_device->readWordLittle(address);
@@ -56,9 +59,26 @@ void memBus::writeWordLittle(unsigned address, word in)
 	bus_list[find(address)].memory_device->writeWordLittle(address, in);
 }
 
+word memBus::readWordBig(unsigned address)
+{
+	bus_list[find(address)].memory_device->readWordBig(address);
+}
+
+void memBus::writeWordBig(unsigned address, word in)
+{
+	bus_list[find(address)].memory_device->writeWordBig(address, in);
+}
+
 void RAMImpl::writeByte(unsigned address, byte in)
 {
 	write(maskAddress(address), in);
+}
+
+byte RAMImpl::readByte(unsigned address)
+{
+	byte out;
+	read(maskAddress(address), out);
+	return out;
 }
 
 halfword RAMImpl::readHalfwordLittle(unsigned address)

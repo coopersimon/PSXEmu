@@ -2,6 +2,7 @@
 #define PS_EXCEPTION_H
 
 #include <stdexcept>
+//#include <exception>
 
 /*
  *	PSException.h
@@ -10,18 +11,18 @@
  *
  */
 
-struct psException
+class psException
 {
-	// get the code of the exception
-	const int execode()
-	{
-		return -1;
-	}
+public:
+	//virtual void Throw() = 0;
 
+	// get the code of the exception
+	virtual const int execode() = 0;
 };
 
-struct intException : public psException
+class intException : public psException
 {
+public:
 
 	const int execode()
 	{
@@ -30,9 +31,9 @@ struct intException : public psException
 
 };
 
-struct modException : public psException
+class modException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 1;
@@ -40,9 +41,9 @@ struct modException : public psException
 
 };
 
-struct tlblException : public psException
+class tlblException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 2;
@@ -50,9 +51,9 @@ struct tlblException : public psException
 
 };
 
-struct tlbsException : public psException
+class tlbsException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 3;
@@ -60,9 +61,9 @@ struct tlbsException : public psException
 
 };
 
-struct adelException : public psException
+class adelException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 4;
@@ -70,9 +71,9 @@ struct adelException : public psException
 
 };
 
-struct adesException : public psException
+class adesException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 5;
@@ -80,9 +81,9 @@ struct adesException : public psException
 
 };
 
-struct ibeException : public psException
+class ibeException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 6;
@@ -90,9 +91,9 @@ struct ibeException : public psException
 
 };
 
-struct dbeException : public psException
+class dbeException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 7;
@@ -100,9 +101,9 @@ struct dbeException : public psException
 
 };
 
-struct sysException : public psException
+class sysException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 8;
@@ -110,9 +111,9 @@ struct sysException : public psException
 
 };
 
-struct bpException : public psException
+class bpException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 9;
@@ -120,9 +121,9 @@ struct bpException : public psException
 
 };
 
-struct riException : public psException
+class riException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 10;
@@ -130,9 +131,9 @@ struct riException : public psException
 
 };
 
-struct cpuException : public psException
+class cpuException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 11;
@@ -140,9 +141,9 @@ struct cpuException : public psException
 
 };
 
-struct ovfException : public psException
+class ovfException : public psException
 {
-
+public:
 	const int execode()
 	{
 		return 12;
