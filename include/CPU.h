@@ -17,8 +17,6 @@
 
 // TODO: namespace!
 
-typedef reg32 MIPSReg;
-
 // class used to represent the R3051 CPU
 class cpu
 {

@@ -13,29 +13,26 @@
 template <typename T>
 class regCommon
 {
+protected:
 	// data of register
 	T data;
+
 	// options
-	bool set_zero : 1;
-	bool read_only : 1;
+	bool read_only;
 
 public:
-	regCommon() : set_zero(false), read_only(false) {};
+	regCommon() : read_only(false) {};
 
-	regCommon(T set_data) : data(set_data), set_zero(false), read_only(false) {};
+	regCommon(T set_data) : data(set_data), read_only(false) {};
 
-	void setVars(bool sz, bool ro)
+	void readOnly()
 	{
-		set_zero = sz;
-		read_only = ro;
+		read_only = true;
 	}
 
-	inline T read()
+	inline T read() const
 	{
-		if (!set_zero)
-			return data;
-		else
-			return 0;
+		return data;
 	}
 
 	inline void write(T in)
@@ -44,31 +41,35 @@ public:
 			data = in;
 	}
 
-	inline void increment(T in)
+	/*inline void increment(T in)
 	{
 		if (!read_only)
 			data += in;
-	}
+	}*/
+
 };
 
-/*template <typename T>
-regCommon<T> &operator=(regCommon<T> lhs, regCommon<T> rhs) {
-	T data;
-	rhs.read(data);
-	lhs.write(data);
-	return lhs;
-}
+class MIPSReg : public regCommon<word>
+{
+private:
+	word mask;
 
-template <typename T>
-regCommon<T> operator+(regCommon<T> lhs, regCommon<T> rhs) {
-	T ldata, rdata;
-	lhs.read(ldata);
-	rhs.read(rdata);
-	ldata += rdata;
-	lhs.write(ldata);
-	return lhs;
-}*/
+public:
+	MIPSReg() : mask(0xFFFFFFFF), regCommon(0) {};
+	MIPSReg(word set_data, word mask_in) : mask(mask_in), regCommon(set_data) {};
 
+	inline void setMask(word mask_in)
+	{
+		mask = mask_in;
+	}
+
+	inline void write(word in)
+	{
+		if (!read_only)
+			data = in & mask;
+	}
+	
+};
 
 typedef regCommon<word> reg32;
 typedef regCommon<halfword> reg16;

@@ -25,7 +25,7 @@ cpu::cpu(memoryInterface *memIn)
 	// cop[2] = new gte;
 	
 	// reg 0 is always 0
-	gp_reg[0].setVars(true, false);
+	gp_reg[0].setMask(0x00000000);
 
 	// initialise PC
 	PC.write(0);
@@ -178,28 +178,28 @@ void cpu::MULT()
 	s_doubleword source64 = s_word(gp_reg[source()].read()); // cast to signed 32 bit value, and then cast to 64 bit value
 	s_doubleword target64 = s_word(gp_reg[target()].read()); // consider including function which returns signed value? (need to cast to 64 bits either way)
 	s_doubleword result = source64 * target64;
-	LO = result & 0xFFFFFFFF;
-	HI = result >> 32;
+	LO.write(result & 0xFFFFFFFF);
+	HI.write(result >> 32);
 }
 void cpu::MULTU()
 {
 	doubleword source64 = gp_reg[source()].read(); // cast to 64 bit value
 	doubleword target64 = gp_reg[target()].read();
 	doubleword result = source64 * target64;
-	LO = result & 0xFFFFFFFF;
-	HI = result >> 32;
+	LO.write(result & 0xFFFFFFFF);
+	HI.write(result >> 32);
 }
 
 void cpu::DIV()
 {
-	LO = s_word(gp_reg[source()].read()) / s_word(gp_reg[target()].read());
-	HI = s_word(gp_reg[source()].read()) % s_word(gp_reg[target()].read());
+	LO.write(s_word(gp_reg[source()].read()) / s_word(gp_reg[target()].read()));
+	HI.write(s_word(gp_reg[source()].read()) % s_word(gp_reg[target()].read()));
 }
 
 void cpu::DIVU()
 {
-	LO = gp_reg[source()].read() / gp_reg[target()].read();
-	HI = gp_reg[source()].read() % gp_reg[target()].read();
+	LO.write(gp_reg[source()].read() / gp_reg[target()].read());
+	HI.write(gp_reg[source()].read() % gp_reg[target()].read());
 }
 
 /********** Move from/to HI/LO ********/

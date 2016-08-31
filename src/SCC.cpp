@@ -1,4 +1,4 @@
-#include "Coprocessor"
+#include "SCC.h"
 
 void scc::storeDataReg(word data_in, unsigned dest_reg)
 {
