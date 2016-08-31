@@ -1,40 +1,72 @@
 #include "SCC.h"
 
-void scc::storeDataReg(word data_in, unsigned dest_reg)
+void SCCReg::writeBits(unsigned lower_bit, unsigned bits_to_write, word data_in)
+{
+	// create mask
+	word mask = ((1 << bits_to_write) - 1) << lower_bit;
+	// shift and mask data in
+	data_in <<= lower_bit;
+	data_in &= mask;
+	// mask reg data and combine with data in
+	data &= (mask ^ 0xFFFFFFFF);
+	data |= data_in;
+}
+
+
+scc::scc()
+{
+	CAUSE = SCCReg(0, 0xB000FF7C);
+
+
+	// initialise register pointers
+	data_reg =
+	{
+		&INDX, &RAND, &TLBL, &BPC,
+		&CTXT, &BDA, &PIDMASK, &DCIC,
+		&BADV, &BDAM, &TLBH, &BPCM,
+		&SR, &CAUSE, &EPC, &PRID
+	};
+
+
+	// initialise function pointers
+	//instruction
+	//{
+		
+	//};
+}
+
+void scc::writeDataReg(word data_in, unsigned dest_reg)
 {
 	if (dest_reg > 15)
 		return;
-	data_reg[dest_reg].write(data_in);
+	data_reg[dest_reg]->write(data_in);
 }
 
-word scc::loadDataReg(unsigned dest_reg)
+word scc::readDataReg(unsigned dest_reg) const
 {
 	if (dest_reg > 15)
 		return 0;
-	return data_reg[dest_reg].read();
+	return data_reg[dest_reg]->read();
 }
 
-void scc::executeInstruction(unsigned instruction)
+
+void TLBR()
 {
-	switch (instruction)
-	{
-	case 1:
-		TLBR();
-		break;
-	case 2:
-		TLBWI();
-		break;
-	case 6:
-		TLBWR();
-		break;
-	case 8:
-		TLBP();
-		break;
-	case 16:
-		RFE();
-		break;
-	default:
-		throw new PSException; // TODO: which exception?
-		break;
-	}
 }
+
+void TLBWI()
+{
+}
+
+void TLBWR()
+{
+}
+
+void TLBP()
+{
+}
+
+void RFE()
+{
+}
+

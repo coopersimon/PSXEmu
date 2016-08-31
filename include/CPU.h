@@ -9,7 +9,7 @@
  */
 
 // includes
-#include "Coprocessor.h"
+#include "SCC.h"
 #include "Memory.h"
 #include "Register.h"
 #include <vector>

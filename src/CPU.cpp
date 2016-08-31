@@ -21,7 +21,7 @@ cpu::cpu(memoryInterface *memIn)
 	memory = memIn;
 	
 	// initialse coprocessors
-	// cop[0] = new scc;
+	cop[0] = new scc;
 	// cop[2] = new gte;
 	
 	// reg 0 is always 0
@@ -96,7 +96,7 @@ void cpu::stepCPU()
 	instruction = memory->readWordLittle(PC.read());
 	// decode instruction
 	word opcode = (instruction >> 26) & 0x3F;
-	
+
 	try {
 		if (opcode == 0)
 		{
@@ -441,7 +441,7 @@ void cpu::SWR()
 
 
 void cpu::LUI()
-{
+{	
 	gp_reg[target()].write(imm() << 16);
 }
 
