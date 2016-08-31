@@ -11,6 +11,7 @@
 // includes
 #include <cstdint>
 #include <list>
+#include <vector>
 
 // types TODO: potentially add an address type
 typedef uint8_t		byte;
@@ -60,6 +61,7 @@ public:
 
 };
 
+// TODO: double check if inhereiting from interface is correct call
 // the bus contains a list of pointers to memory devices so they can be accessed from within processor classes
 class memBus : public memoryInterface
 {
@@ -69,16 +71,19 @@ class memBus : public memoryInterface
 		unsigned address_start;
 		unsigned address_end;
 		memoryInterface *memory_device;
+		memoryPointer(unsigned addr_start, unsigned  addr_end, memoryInterface *mem_dev): address_start(addr_start), address_end(addr_end), memory_device(mem_dev){}; 
 	};
 
-	std::list<memoryPointer> bus_list;
+	std::vector<memoryPointer> bus_list;
 
 public:
 	// the memory devices are not owned by the bus so we don't have to delete them afterwards
 	void mountMemory(memoryInterface *memory_device, unsigned address_start, unsigned address_end)
-		{ bus_list.push_back({ address_start, address_end, memory_device }); }
+		{ bus_list.push_back(memoryPointer(address_start, address_end, memory_device)); }
 
 	// all of these look up the address on the bus, translate it and operate on memory
+	int find(unsigned address);
+
 	byte readByte(unsigned address);
 	void writeByte(unsigned address, byte in);
 

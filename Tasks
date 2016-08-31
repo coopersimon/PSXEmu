@@ -4,14 +4,10 @@ Overall:
 
 Simon:
 	SCC working and completion
-	(shared) CPU test
-	SCC test
+	GTE
 
 Diederik:
-	Look into Memory
-	Start basics
-	(shared) CPU test
-	Memory test
 	Build testbench
+	GPU
 
 Jesus:
