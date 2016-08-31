@@ -2,7 +2,7 @@
 #include "PSException.h"
 //#include <iostream>
 
-// dealing with multiple bytes might need improvement. this needs to be quick.
+// TODO: dealing with multiple bytes might need improvement. this needs to be quick.
 // these also need to be carefully tested. casting etc
 
 byte RAMImpl::readByte(unsigned address)
@@ -10,6 +10,50 @@ byte RAMImpl::readByte(unsigned address)
 	byte out;
 	read(maskAddress(address), out);
 	return out;
+}
+
+int memBus::find(unsigned address)
+{
+	for (int i = 0; i < bus_list.size(); i++)
+	{
+		int addr_start = (address & bus_list[i].address_start) - bus_list[i].address_start;
+		int addr_end = (address & bus_list[i].address_end) - bus_list[i].address_end;
+		if ((!addr_start) && (!addr_end))
+		{
+			return i;
+		}
+	}		
+	//TODO: pick proper exception
+}
+
+byte memBus::readByte(unsigned address)
+{
+	bus_list[find(address)].memory_device->readByte(address);
+}
+
+void memBus::writeByte(unsigned address, byte in)
+{
+	bus_list[find(address)].memory_device->writeByte(address, in);
+}
+
+halfword memBus::readHalfwordLittle(unsigned address)
+{
+	bus_list[find(address)].memory_device->readHalfwordLittle(address);
+}
+
+void memBus::writeHalfwordLittle(unsigned address, halfword in)
+{
+	bus_list[find(address)].memory_device->writeHalfwordLittle(address, in);
+}
+
+word memBus::readWordLittle(unsigned address)
+{
+	bus_list[find(address)].memory_device->readWordLittle(address);
+}
+
+void memBus::writeWordLittle(unsigned address, word in)
+{
+	bus_list[find(address)].memory_device->writeWordLittle(address, in);
 }
 
 void RAMImpl::writeByte(unsigned address, byte in)
@@ -104,7 +148,6 @@ void RAMImpl::writeWordBig(unsigned address, word in)
 	bytes[0] = (in >> 24) & 0xFF;
 	writeMultiple(address, bytes, 4);
 }
-
 
 /* ram test
 int main()
