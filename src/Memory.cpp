@@ -1,22 +1,22 @@
 #include "Memory.h"
 #include "PSException.h"
-//#include <iostream>
+#include <iostream>
 
 // TODO: dealing with multiple bytes might need improvement. this needs to be quick.
 // these also need to be carefully tested. casting etc
 
 int memBus::find(unsigned address)
 {
+	//std::cout << "address: " << address << std::endl;
 	for (int i = 0; i < bus_list.size(); i++)
 	{
-		int addr_start = (address & bus_list[i].address_start) - bus_list[i].address_start;
-		int addr_end = (address & bus_list[i].address_end) - bus_list[i].address_end;
-		if ((!addr_start) && (!addr_end))
+		if ((address >= bus_list[i].address_start) && (address <= bus_list[i].address_end))
 		{
 			return i;
 		}
 	}		
 	//TODO: pick proper exception
+	throw adesException();
 }
 
 byte memBus::readByte(unsigned address)
@@ -56,6 +56,7 @@ word memBus::readWordLittle(unsigned address)
 
 void memBus::writeWordLittle(unsigned address, word in)
 {
+	std::cout << "in: " << in << std::endl;
 	bus_list[find(address)].memory_device->writeWordLittle(address, in);
 }
 
@@ -135,6 +136,7 @@ word RAMImpl::readWordLittle(unsigned address)
 
 void RAMImpl::writeWordLittle(unsigned address, word in)
 {
+	std::cout << "in-2: " << in << std::endl;
 	if (address % 4)
 		throw adesException();
 	byte bytes[4];
