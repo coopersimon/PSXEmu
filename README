@@ -1,13 +1,8 @@
-Currently working on CPU.
+Core CPU is basically done. Coproc communication needs to be sorted out.
 
-Porting from C to C++
-
-
-Memory management & registers need to be sorted out.
-
-Next up: GTE and Cop0
-
+CPU needs to be tested in depth
+Next up: GTE and Cop0. And GPU.
 
 Documentation:
-	http://gamehacking.org/faqs/PSX.pdf
-	http://problemkaputt.de/psx-spx.htm
+	[Everything you have always wanted to know...](http://gamehacking.org/faqs/PSX.pdf)
+	[In depth documentation](http://problemkaputt.de/psx-spx.htm)

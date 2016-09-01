@@ -98,11 +98,11 @@ void cpu::stepCPU()
 	catch (psException &e) {
 		// set BD
 		// set CE
-		SCC.CAUSE.writeBits(28, 2, coproc());
+		SCC.data_reg[scc::CAUSE].writeBits(28, 2, coproc());
 		// set IP
 		// set SW
 		// set EXECODE
-		SCC.CAUSE.writeBits(2, 5, e.execode());
+		SCC.data_reg[scc::CAUSE].writeBits(2, 5, e.execode());
 	}
 
 	incrementPCNext();
@@ -200,7 +200,7 @@ void cpu::MFHI()
 
 void cpu::MTHI()
 {
-	HI.write(dest());
+	HI.write(source());
 }
 
 void cpu::MFLO()
@@ -210,7 +210,7 @@ void cpu::MFLO()
 
 void cpu::MTLO()
 {
-	LO.write(dest());
+	LO.write(source());
 }
 
 
@@ -581,9 +581,9 @@ void cpu::SWCz()
 {
 	word address = source() + imm();
 	if (checkEndianness())
-		memory->writeWordLittle(address, cop[coproc()]->readDataReg(target_val()));
+		memory->writeWordLittle( address, cop[coproc()]->readDataReg(target_val()) );
 	else
-		memory->writeWordBig(address, cop[coproc()]->readDataReg(target_val()));
+		memory->writeWordBig( address, cop[coproc()]->readDataReg(target_val()) );
 }
 
 /*void cpu::MTCz()
