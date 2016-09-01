@@ -12,12 +12,9 @@
 #include "Register.h"
 #include "PSException.h"
 
-class cpu;
-
 // generic empty coprocessor class
 class coprocessor
 {
-	friend cpu;
 public:
 	// register transfers
 	void writeDataReg(word data_in, unsigned dest_reg) { throw new cpuException; }

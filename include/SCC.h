@@ -14,6 +14,8 @@
 #include <vector>
 #include <functional>
 
+class cpu;
+
 // register classes
 // TODO: finish adding classes and define all functions
 /*class indexReg : public MIPSReg
@@ -125,7 +127,6 @@ class scc : public coprocessor
 	
 public:
 	scc();
-	~scc();
 
 	// register transfers
 	void writeDataReg(word data_in, unsigned dest_reg);
@@ -138,6 +139,8 @@ private:
 	void TLBWR();
 	void TLBP();
 	void RFE();
+
+	friend cpu;
 };
 
 #endif

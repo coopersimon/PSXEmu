@@ -3,16 +3,6 @@
 #include "PSException.h"
 #include <iostream>
 
-// TODO: should these be defines? maybe just inline functions
-// shifts the imm() up by 2 bits, and adds to the next PC, minus one instruction
-#define branchPC(x);	s_word result = s_halfword(x) << 2; \
-			PC_Next.write((PC_Next.read() + result) - 4);
-
-// shifts the jump value by 2 bits, and sets the next PC, minus one instruction
-// upper 4 bits are the same as next PC
-#define jumpPC(x);	word result = PC_Next.read() & 0xF0000000; \
-			result |= x << 2; \
-			PC_Next.write(result - 4);
 
 // TODO: clever c++11 pointer stuff
 cpu::cpu(memoryInterface *memIn)
@@ -21,7 +11,7 @@ cpu::cpu(memoryInterface *memIn)
 	memory = memIn;
 	
 	// initialse coprocessors
-	cop[0] = new scc;
+	cop[0] = &SCC;
 	// cop[2] = new gte;
 	
 	// reg 0 is always 0
@@ -29,7 +19,7 @@ cpu::cpu(memoryInterface *memIn)
 
 	// initialise PC
 	PC.write(0);
-	PC_Next.write(4);
+	PC_next.write(4);
 
 	// function pointers
 	r_type = {
@@ -84,16 +74,11 @@ cpu::cpu(memoryInterface *memIn)
 	// TODO: add in other function pointer(s)
 }
 
-cpu::~cpu()
-{
-	// delete coprocessors
-	// delete cop[0];
-	// delete cop[2];
-}
-
 void cpu::stepCPU()
 {
+	// get instruction from mem & advance PC
 	instruction = memory->readWordLittle(PC.read());
+	PC.write(PC_next.read());
 	// decode instruction
 	word opcode = (instruction >> 26) & 0x3F;
 
@@ -111,11 +96,16 @@ void cpu::stepCPU()
 		}
 	}
 	catch (psException &e) {
-		std::cout << e.execode() << std::endl;
+		// set BD
+		// set CE
+		SCC.CAUSE.writeBits(28, 2, coproc());
+		// set IP
+		// set SW
+		// set EXECODE
+		SCC.CAUSE.writeBits(2, 5, e.execode());
 	}
 
-	PC.write(PC_Next.read());
-	PC_Next.write(PC_Next.read() + 4);
+	incrementPCNext();
 }
 
 void cpu::RESERVED()
@@ -129,62 +119,62 @@ void cpu::RESERVED()
 /********** Add/Subtract **************/
 void cpu::ADD()
 {
-	word result = gp_reg[source()].read() + gp_reg[target()].read();
-	if (0x80000000 & (gp_reg[source()].read() ^ result)) // if output sign and input sign are different
-	{	if (0x80000000 & gp_reg[source()].read() & gp_reg[target()].read()) // if the operand signs are the same
+	word result = source() + target();
+	if (0x80000000 & (source() ^ result)) // if output sign and input sign are different
+	{	if (0x80000000 & source() & target()) // if the operand signs are the same
 			throw ovfException();
 	}
-	gp_reg[dest()].write(result);
+	dest(result);
 }
 void cpu::ADDU()
 {
-	word result = gp_reg[source()].read() + gp_reg[target()].read();
-	gp_reg[dest()].write(result);
+	word result = source() + target();
+	dest(result);
 }
 void cpu::ADDI()
 {
-	word result = gp_reg[source()].read() + imm();
-	if (0x80000000 & (gp_reg[source()].read() ^ result)) // if output sign and input sign are different
+	word result = source() + imm();
+	if (0x80000000 & (source() ^ result)) // if output sign and input sign are different
 	{
-		if (0x80000000 & gp_reg[source()].read() & gp_reg[target()].read()) // if the operand signs are the same
+		if (0x80000000 & source() & target()) // if the operand signs are the same
 			throw ovfException();
 	}
-	gp_reg[target()].write(result);
+	target(result);
 }
 void cpu::ADDIU()
 {
-	word result = gp_reg[source()].read() + imm();
-	gp_reg[target()].write(result);
+	word result = source() + imm();
+	target(result);
 }
 void cpu::SUB()
 {
-	word result = gp_reg[source()].read() - gp_reg[target()].read();
-	if (0x80000000 & (gp_reg[source()].read() ^ result))  // if output sign and input sign are different
+	word result = source() - target();
+	if (0x80000000 & (source() ^ result))  // if output sign and input sign are different
 	{
-		if (0x80000000 & (gp_reg[source()].read() ^ gp_reg[target()].read())) // if the operand signs are different
+		if (0x80000000 & (source() ^ target())) // if the operand signs are different
 			throw ovfException();
 	}
-	gp_reg[dest()].write(result);
+	dest(result);
 }
 void cpu::SUBU()
 {
-	word result = gp_reg[source()].read() - gp_reg[target()].read();
-	gp_reg[dest()].write(result);
+	word result = source() - target();
+	dest(result);
 }
 
 /********** Multiply/Divide ***********/
 void cpu::MULT()
 {
-	s_doubleword source64 = s_word(gp_reg[source()].read()); // cast to signed 32 bit value, and then cast to 64 bit value
-	s_doubleword target64 = s_word(gp_reg[target()].read()); // consider including function which returns signed value? (need to cast to 64 bits either way)
+	s_doubleword source64 = s_word(source()); // cast to signed 32 bit value, and then cast to 64 bit value
+	s_doubleword target64 = s_word(target()); // consider including function which returns signed value? (need to cast to 64 bits either way)
 	s_doubleword result = source64 * target64;
 	LO.write(result & 0xFFFFFFFF);
 	HI.write(result >> 32);
 }
 void cpu::MULTU()
 {
-	doubleword source64 = gp_reg[source()].read(); // cast to 64 bit value
-	doubleword target64 = gp_reg[target()].read();
+	doubleword source64 = source(); // cast to 64 bit value
+	doubleword target64 = target();
 	doubleword result = source64 * target64;
 	LO.write(result & 0xFFFFFFFF);
 	HI.write(result >> 32);
@@ -192,150 +182,150 @@ void cpu::MULTU()
 
 void cpu::DIV()
 {
-	LO.write(s_word(gp_reg[source()].read()) / s_word(gp_reg[target()].read()));
-	HI.write(s_word(gp_reg[source()].read()) % s_word(gp_reg[target()].read()));
+	LO.write(s_word(source()) / s_word(target()));
+	HI.write(s_word(source()) % s_word(target()));
 }
 
 void cpu::DIVU()
 {
-	LO.write(gp_reg[source()].read() / gp_reg[target()].read());
-	HI.write(gp_reg[source()].read() % gp_reg[target()].read());
+	LO.write(source() / target());
+	HI.write(source() % target());
 }
 
 /********** Move from/to HI/LO ********/
 void cpu::MFHI()
 {
-	gp_reg[dest()].write(HI.read());	// there are some access rules but I guess we can ignore these
+	dest(HI.read());	// there are some access rules but I guess we can ignore these
 }
 
 void cpu::MTHI()
 {
-	HI.write(gp_reg[dest()].read());
+	HI.write(dest());
 }
 
 void cpu::MFLO()
 {
-	gp_reg[dest()].write(LO.read());
+	dest(LO.read());
 }
 
 void cpu::MTLO()
 {
-	LO.write(gp_reg[dest()].read());
+	LO.write(dest());
 }
 
 
 /********** Bitwise Logic *************/
 void cpu::AND()
 {
-	word result = gp_reg[source()].read() & gp_reg[target()].read();
-	gp_reg[dest()].write(result);
+	word result = source() & target();
+	dest(result);
 }
 
 void cpu::ANDI()
 {
 	word imm32 = imm() & 0xFFFF;
-	word result = gp_reg[source()].read() & imm32;
-	gp_reg[target()].write(result);
+	word result = source() & imm32;
+	target(result);
 }
 
 void cpu::OR()
 {
-	word result = gp_reg[source()].read() | gp_reg[target()].read();
-	gp_reg[dest()].write(result);
+	word result = source() | target();
+	dest(result);
 }
 
 void cpu::ORI()
 {
 	word imm32 = imm() & 0xFFFF;
-	word result = gp_reg[source()].read() | imm32;
-	gp_reg[target()].write(result);
+	word result = source() | imm32;
+	target(result);
 }
 
 void cpu::XOR()
 {
-	word result = gp_reg[source()].read() ^ gp_reg[target()].read();
-	gp_reg[dest()].write(result);
+	word result = source() ^ target();
+	dest(result);
 }
 
 void cpu::XORI()
 {
 	word imm32 = imm() & 0xFFFF;
-	word result = gp_reg[source()].read() ^ imm32;
-	gp_reg[target()].write(result);
+	word result = source() ^ imm32;
+	target(result);
 }
 
 void cpu::NOR()
 {
-	word result = gp_reg[source()].read() | gp_reg[target()].read();
+	word result = source() | target();
 	result ^= 0xFFFFFFFF;
-	gp_reg[dest()].write(result);
+	dest(result);
 }
 
 
 /********** Shifts ********************/
 void cpu::SLL()
 {
-	word result = gp_reg[target()].read() << shamt();
-	gp_reg[dest()].write(result);
+	word result = target() << shamt();
+	dest(result);
 }
 
 void cpu::SRL()
 {
-	word result = gp_reg[target()].read() >> shamt();
+	word result = target() >> shamt();
 	word mask = (1 << (31 - shamt()));
 	mask |= mask - 1;
 	result &= mask;
-	gp_reg[dest()].write(result);
+	dest(result);
 }
 
 void cpu::SRA()
 {
-	word result = gp_reg[target()].read() >> shamt();
-	gp_reg[dest()].write(result);
+	word result = target() >> shamt();
+	dest(result);
 }
 
 void cpu::SLLV()
 {
-	word result = gp_reg[target()].read() << gp_reg[source()].read();
-	gp_reg[dest()].write(result);
+	word result = target() << source();
+	dest(result);
 }
 
 void cpu::SRLV()
 {
-	word result = gp_reg[target()].read() >> gp_reg[source()].read();
-	word mask = (1 << (31 - gp_reg[source()].read()));
+	word result = target() >> source();
+	word mask = (1 << (31 - source()));
 	mask |= mask - 1;
 	result &= mask;
-	gp_reg[dest()].write(result);
+	dest(result);
 }
 
 void cpu::SRAV()
 {
-	word result = gp_reg[target()].read() >> gp_reg[source()].read();
-	gp_reg[dest()].write(result);
+	word result = target() >> source();
+	dest(result);
 }
 
 
 /********** Load/Store ****************/
 void cpu::LB()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word result = memory->readByte(address) & 0xFF;
 	if (result >> 7)
 		result |= 0xFFFFFF00;
-	gp_reg[target()].write(result);
+	target(result);
 }
 
 void cpu::LBU()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word result = memory->readByte(address) & 0xFF;
-	gp_reg[target()].write(result);
+	target(result);
 }
 
 void cpu::LH()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word result;
 	if (checkEndianness())
 		result = memory->readHalfwordLittle(address) & 0xFFFF;
@@ -343,35 +333,35 @@ void cpu::LH()
 		result = memory->readHalfwordBig(address) & 0xFFFF;
 	if (result >> 15)
 		result |= 0xFFFF0000;
-	gp_reg[target()].write(result);
+	target(result);
 }
 
 void cpu::LHU()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word result;
 	if (checkEndianness())
 		result = memory->readHalfwordLittle(address) & 0xFFFF;
 	else
 		result = memory->readHalfwordBig(address) & 0xFFFF;
-	gp_reg[target()].write(result);
+	target(result);
 }
 
 void cpu::LW()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word result;
 	if (checkEndianness())
 		result = memory->readWordLittle(address);
 	else
 		result = memory->readWordBig(address);
-	gp_reg[target()].write(result);
+	target(result);
 }
 
 // following 2 instructions are in big-endian mode. I believe PSX is little endian by default
 void cpu::LWL()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word byte_number = address % 4;
 	address -= byte_number;	// align address
 
@@ -381,14 +371,14 @@ void cpu::LWL()
 	load_data <<= byte_number * 8;
 
 	// mask target() so it matches the empty bytes left by the load data
-	word result = gp_reg[target()].read() & (0xFFFFFFFF >> ((4 - byte_number) * 8));
+	word result = target() & (0xFFFFFFFF >> ((4 - byte_number) * 8));
 
-	gp_reg[target()].write(result | load_data);
+	target(result | load_data);
 }
 
 void cpu::LWR()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word byte_number = address % 4;
 	address -= byte_number;	// align address
 
@@ -398,35 +388,35 @@ void cpu::LWR()
 	load_data >>= (3 - byte_number) * 8;
 
 	// mask target() so it matches the empty bytes left by the load data
-	word result = gp_reg[target()].read() & (0xFFFFFFFF << ((1 + byte_number) * 8));
+	word result = target() & (0xFFFFFFFF << ((1 + byte_number) * 8));
 
-	gp_reg[target()].write(result | load_data);
+	target(result | load_data);
 }
 
 
 void cpu::SB()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	//byte data_in = gp_reg[target()].read() & 0xFF;
-	memory->writeByte(address, byte(gp_reg[target()].read()));
+	memory->writeByte(address, byte(target()));
 }
 
 void cpu::SH()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	if (checkEndianness())
-		memory->writeHalfwordLittle(address, halfword(gp_reg[target()].read()));
+		memory->writeHalfwordLittle(address, halfword(target()));
 	else
-		memory->writeHalfwordBig(address, halfword(gp_reg[target()].read()));
+		memory->writeHalfwordBig(address, halfword(target()));
 }
 
 void cpu::SW()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	if (checkEndianness())
-		memory->writeWordLittle(address, gp_reg[target()].read());
+		memory->writeWordLittle(address, target());
 	else
-		memory->writeWordBig(address, gp_reg[target()].read());
+		memory->writeWordBig(address, target());
 }
 
 // next 2 instructions: little endian!
@@ -442,120 +432,124 @@ void cpu::SWR()
 
 void cpu::LUI()
 {	
-	gp_reg[target()].write(imm() << 16);
+	target(imm() << 16);
 }
 
 
 /********** Branch ********************/
 void cpu::BEQ()
 {
-	if (gp_reg[source()].read() == gp_reg[target()].read())
-		branchPC(imm());
+	if (source() == target())
+		branchRoutine(imm());
 }
 
 void cpu::BNE()
 {
-	if (gp_reg[source()].read() != gp_reg[target()].read())
-		branchPC(imm());
+	if (source() != target())
+		branchRoutine(imm());
 }
 
 void cpu::BCOND()
 {
-	bcond_type[target()];
+	bcond_type[target_val()](this);
 }
 
 void cpu::BGEZ()
 {
-	if (gp_reg[source()].read() >= 0)
-		branchPC(imm());
+	if (source() >= 0)
+		branchRoutine(imm());
 }
 
 void cpu::BGEZAL()
 {
-	if (gp_reg[source()].read() >= 0)
+	if (source() >= 0)
 	{
 		gp_reg[31].write(PC.read() + 8);
-		branchPC(imm());
+		branchRoutine(imm());
 	}
 }
 
 void cpu::BLTZ()
 {
-	if (gp_reg[source()].read() < 0)
-		branchPC(imm());
+	if (source() < 0)
+		branchRoutine(imm());
 }
 
 void cpu::BLTZAL()
 {
-	if (gp_reg[source()].read() < 0)
+	if (source() < 0)
 	{
 		gp_reg[31].write(PC.read() + 8);
-		branchPC(imm());
+		branchRoutine(imm());
 	}
 }
 
 void cpu::BGTZ()
 {
-	if (gp_reg[source()].read() > 0)
-		branchPC(imm());
+	if (source() > 0)
+		branchRoutine(imm());
 }
 
 void cpu::BLEZ()
 {
-	if (gp_reg[source()].read() <= 0)
-		branchPC(imm());
+	if (source() <= 0)
+		branchRoutine(imm());
 }
 
 
 /********** Jump **********************/
 void cpu::J()
 {
-	jumpPC(jump());
+	word result = PC.read() & 0xF0000000;
+	result |= jump() << 2;
+	PC_next.write(result - 4);
 }
 
 void cpu::JAL()
 {
 	gp_reg[31].write(PC.read() + 8);
-	jumpPC(jump());
+	word result = PC.read() & 0xF0000000;
+	result |= jump() << 2;
+	PC_next.write(result - 4);
 }
 
 void cpu::JR()
 {
-	jumpPC(gp_reg[source()].read());
+	PC_next.write(source() - 4);
 }
 
 void cpu::JALR()
 {
 	gp_reg[31].write(PC.read() + 8);
-	jumpPC(gp_reg[source()].read());
+	PC_next.write(source() - 4);
 }
 
 
 /********** Set ***********************/
 void cpu::SLT()
 {
-	word result = (s_word(gp_reg[source()].read()) < gp_reg[target()].read());
-	gp_reg[dest()].write(result);
+	word result = (s_word(source()) < target());
+	dest(result);
 }
 
 void cpu::SLTU()
 {
-	word result = (gp_reg[source()].read() < gp_reg[target()].read());
-	gp_reg[dest()].write(result);
+	word result = (source() < target());
+	dest(result);
 }
 
 void cpu::SLTI()
 {
 	s_word imm32 = imm();
-	word result = (s_word(gp_reg[source()].read()) < imm32);
-	gp_reg[target()].write(result);
+	word result = (s_word(source()) < imm32);
+	target(result);
 }
 
 void cpu::SLTIU()
 {
 	s_word imm32 = imm();
-	word result = (gp_reg[source()].read() < imm32);
-	gp_reg[target()].write(result);
+	word result = (source() < imm32);
+	target(result);
 }
 
 
@@ -574,22 +568,22 @@ void cpu::BREAK()
 /********** Coprocessor ***************/
 void cpu::LWCz()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	word data;
 	if (checkEndianness())
 		data = memory->readWordLittle(address);
 	else
 		data = memory->readWordBig(address);
-	cop[coproc()]->writeDataReg(data, target());
+	cop[coproc()]->writeDataReg(data, target_val());
 }
 
 void cpu::SWCz()
 {
-	word address = gp_reg[source()].read() + imm();
+	word address = source() + imm();
 	if (checkEndianness())
-		memory->writeWordLittle(address, cop[coproc()]->readDataReg(target()));
+		memory->writeWordLittle(address, cop[coproc()]->readDataReg(target_val()));
 	else
-		memory->writeWordBig(address, cop[coproc()]->readDataReg(target()));
+		memory->writeWordBig(address, cop[coproc()]->readDataReg(target_val()));
 }
 
 /*void cpu::MTCz()

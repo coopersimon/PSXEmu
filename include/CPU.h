@@ -25,12 +25,15 @@ class cpu
 	// program counter
 	MIPSReg PC;
 	// next value of program counter
-	MIPSReg PC_Next;
+	MIPSReg PC_next;
 	// HI and LO special registers
 	MIPSReg HI;
 	MIPSReg LO;
 
 	/*** Coprocessors ***/
+	scc SCC;
+	// gte GTE;
+	// generic pointers for load/store
 	coprocessor * cop[4];
 
 	/*** Memory bus ***/
@@ -53,28 +56,43 @@ public:
 	// construct processor
 	cpu(memoryInterface *memIn);
 
-	~cpu();
+	//~cpu();
 
 	// steps the CPU by one tick.
 	// pretty much everything is handled internally: instruction decoding, exception handling
 	void stepCPU();
 
 private:
+	/********** INLINE FUNCTIONS **********/
 
 	inline bool checkEndianness() { return little_endian; /*&& status bit*/ }
-	// done at the end of every cpu tick.
-	void incrementPCNext() { PC_Next.write(PC_Next.read() + 4); }
+	
+	// done at the end of every CPU step
+	inline void incrementPCNext() { PC_next.write(PC_next.read() + 4); }
+
+	// when dealing with branches
+	inline void branchRoutine(s_halfword in)
+	{
+		s_word result = in << 2;
+		PC_next.write(PC_next.read() + in - 4);
+	}
+
+	// read/write instruction registers
+	inline unsigned source() const { return gp_reg[(instruction >> 21) & 0x1F].read(); }
+	inline void source(word in) { gp_reg[(instruction >> 21) & 0x1F].write(in); }
+	inline unsigned target() const { return gp_reg[(instruction >> 16) & 0x1F].read(); }
+	inline void target(word in) { gp_reg[(instruction >> 16) & 0x1F].write(in); }
+	inline unsigned dest() const { return gp_reg[(instruction >> 11) & 0x1F].read(); }
+	inline void dest(word in) { gp_reg[(instruction >> 11) & 0x1F].write(in); }
 
 	// instruction decoding
-	inline unsigned source() { return (instruction >> 21) & 0x1F; }
-	inline unsigned target() { return (instruction >> 16) & 0x1F; }
-	inline unsigned dest() { return (instruction >> 11) & 0x1F; }
-	inline unsigned shamt() { return (instruction >> 6) & 0x1F; }
-	inline halfword imm() { return instruction & 0xFFFF; }
-	inline unsigned jump() { return instruction & 0x3FFFFFF; }
-	inline unsigned coproc() { return (instruction >> 26) & 0x3; }
+	inline unsigned target_val() const { return (instruction >> 16) & 0x1F; }
+	inline unsigned shamt() const { return (instruction >> 6) & 0x1F; }
+	inline halfword imm() const { return instruction & 0xFFFF; }
+	inline unsigned jump() const { return instruction & 0x3FFFFFF; }
+	inline unsigned coproc() const { return (instruction >> 26) & 0x3; }
 
-	// instructions
+	/********** INSTRUCTIONS **************/
 	void RESERVED();
 
 	// f = function, o = opcode, t = target reg value, s = source reg value

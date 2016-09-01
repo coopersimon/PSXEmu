@@ -15,6 +15,7 @@ void SCCReg::writeBits(unsigned lower_bit, unsigned bits_to_write, word data_in)
 
 scc::scc()
 {
+	// initialise registers
 	CAUSE = SCCReg(0, 0xB000FF7C);
 
 
@@ -29,10 +30,10 @@ scc::scc()
 
 
 	// initialise function pointers
-	//instruction
-	//{
+	/*instruction
+	{
 		
-	//};
+	};*/
 }
 
 void scc::writeDataReg(word data_in, unsigned dest_reg)
