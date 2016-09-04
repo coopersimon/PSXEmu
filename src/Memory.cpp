@@ -21,7 +21,7 @@ int memBus::find(unsigned address)
 
 byte memBus::readByte(unsigned address)
 {
-	bus_list[find(address)].memory_device->readByte(address);
+	return bus_list[find(address)].memory_device->readByte(address);
 }
 
 void memBus::writeByte(unsigned address, byte in)
@@ -31,7 +31,7 @@ void memBus::writeByte(unsigned address, byte in)
 
 halfword memBus::readHalfwordLittle(unsigned address)
 {
-	bus_list[find(address)].memory_device->readHalfwordLittle(address);
+	return bus_list[find(address)].memory_device->readHalfwordLittle(address);
 }
 
 void memBus::writeHalfwordLittle(unsigned address, halfword in)
@@ -41,7 +41,7 @@ void memBus::writeHalfwordLittle(unsigned address, halfword in)
 
 halfword memBus::readHalfwordBig(unsigned address)
 {
-	bus_list[find(address)].memory_device->readHalfwordBig(address);
+	return bus_list[find(address)].memory_device->readHalfwordBig(address);
 }
 
 void memBus::writeHalfwordBig(unsigned address, halfword in)
@@ -51,18 +51,17 @@ void memBus::writeHalfwordBig(unsigned address, halfword in)
 
 word memBus::readWordLittle(unsigned address)
 {
-	bus_list[find(address)].memory_device->readWordLittle(address);
+	return bus_list[find(address)].memory_device->readWordLittle(address);
 }
 
 void memBus::writeWordLittle(unsigned address, word in)
 {
-	std::cout << "in: " << in << std::endl;
 	bus_list[find(address)].memory_device->writeWordLittle(address, in);
 }
 
 word memBus::readWordBig(unsigned address)
 {
-	bus_list[find(address)].memory_device->readWordBig(address);
+	return bus_list[find(address)].memory_device->readWordBig(address);
 }
 
 void memBus::writeWordBig(unsigned address, word in)
@@ -136,7 +135,6 @@ word RAMImpl::readWordLittle(unsigned address)
 
 void RAMImpl::writeWordLittle(unsigned address, word in)
 {
-	std::cout << "in-2: " << in << std::endl;
 	if (address % 4)
 		throw adesException();
 	byte bytes[4];
