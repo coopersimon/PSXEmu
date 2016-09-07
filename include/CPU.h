@@ -46,6 +46,9 @@ class cpu
 	bool little_endian;	// true if cpu is in little endian mode
 	unsigned instruction;
 
+      /*** Exception related variables ***/
+      bool branch_delay;      // true if instruction currently executing is in the branch delay slot
+
 	/*** Function Pointers ***/
 	std::vector<std::function<void(cpu*)>> r_type;
 	std::vector<std::function<void(cpu*)>> i_type;
@@ -70,12 +73,27 @@ private:
 	// done at the end of every CPU step
 	inline void incrementPCNext() { PC_next.write(PC_next.read() + 4); }
 
-	// when dealing with branches
+	// when branching
 	inline void branchRoutine(s_halfword in)
 	{
 		s_word result = in << 2;
 		PC_next.write(PC_next.read() + in - 4);
+            //branch_delay = true;
 	}
+
+      // set every cycle, used for exception handling
+      inline void setEPC()
+      {
+            if (PC_next.read() - PC.read() != 4)      // if PC is currently in the branch delay slot
+            {
+                  branch_delay = true;
+            }
+            else //if (!branch_delay)      // if PC is not currently in a branch delay slot
+            {
+                  SCC.data_reg[scc::EPC].writeBits(PC.read());
+                  branch_delay = false;
+            }
+      }
 
 	// read/write instruction registers
 	inline unsigned source() const { return gp_reg[(instruction >> 21) & 0x1F].read(); }
@@ -87,6 +105,7 @@ private:
 
 	// instruction decoding
 	inline unsigned target_val() const { return (instruction >> 16) & 0x1F; }
+      inline unsigned dest_val() const { return (instruction >> 11) & 0x1F; }
 	inline unsigned shamt() const { return (instruction >> 6) & 0x1F; }
 	inline halfword imm() const { return instruction & 0xFFFF; }
 	inline unsigned jump() const { return instruction & 0x3FFFFFF; }
@@ -181,10 +200,10 @@ private:
 	/********** Coprocessor ***************/
 	void LWCz(); // o 0x30-3
 	void SWCz(); // o 0x38-B
-	//void MTCz(); // o 0x10-3, s 0x04
-	//void MFCz(); // o 0x10-3, s 0x00
-	//void CTCz(); // o 0x10-3, s 0x06
-	//void CFCz(); // o 0x10-3, s 0x02*/
+	void MTCz(); // o 0x10-3, s 0x04
+	void MFCz(); // o 0x10-3, s 0x00
+	void CTCz(); // o 0x10-3, s 0x06
+	void CFCz(); // o 0x10-3, s 0x02
 	void COPz(); // o 0x10-3 - called on the coprocessor directly
 
 };

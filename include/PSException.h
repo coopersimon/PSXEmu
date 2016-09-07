@@ -24,7 +24,7 @@ class intException : public psException
 {
 public:
 
-	const int execode()
+	const int execode() override
 	{
 		return 0;
 	}
@@ -34,7 +34,7 @@ public:
 class modException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 1;
 	}
@@ -44,7 +44,7 @@ public:
 class tlblException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 2;
 	}
@@ -54,7 +54,7 @@ public:
 class tlbsException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 3;
 	}
@@ -64,7 +64,7 @@ public:
 class adelException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 4;
 	}
@@ -74,7 +74,7 @@ public:
 class adesException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 5;
 	}
@@ -84,7 +84,7 @@ public:
 class ibeException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 6;
 	}
@@ -94,7 +94,7 @@ public:
 class dbeException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 7;
 	}
@@ -104,7 +104,7 @@ public:
 class sysException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 8;
 	}
@@ -114,7 +114,7 @@ public:
 class bpException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 9;
 	}
@@ -124,7 +124,7 @@ public:
 class riException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 10;
 	}
@@ -134,7 +134,7 @@ public:
 class cpuException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 11;
 	}
@@ -144,7 +144,7 @@ public:
 class ovfException : public psException
 {
 public:
-	const int execode()
+	const int execode() override
 	{
 		return 12;
 	}

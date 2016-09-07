@@ -1,6 +1,6 @@
 #include "SCC.h"
 
-void SCCReg::writeBits(unsigned lower_bit, unsigned bits_to_write, word data_in)
+void SCCReg::writeBits(word data_in, unsigned lower_bit, unsigned bits_to_write)
 {
 	// create mask
 	word mask = ((1 << bits_to_write) - 1) << lower_bit;
@@ -18,14 +18,21 @@ scc::scc()
 	// initialise register masks
 	data_reg[INDX].setMask(0x80003F00);
 	data_reg[RAND].setMask(0x00003F00); //TODO: rand register: this may be done differently
+	data_reg[RAND].readOnly();
 	data_reg[TLBL].setMask(0xFFFFFF00);
 	data_reg[TLBH].setMask(0xFFFFFFC0);
 	data_reg[CAUSE].setMask(0xB000FF7C);
+	data_reg[CAUSE].readOnly();
 	data_reg[CTXT].setMask(0xFFFFFFFC);
+	data_reg[CTXT].readOnly();
 	data_reg[SR].setMask(0xF27FFF3F);
 	data_reg[PRID].setMask(0x0000FFFF);
+	data_reg[PRID].readOnly();
 	data_reg[DCIC].setMask(0xEF800000);
 	data_reg[DCIC].write(0xE0800000);
+	data_reg[BADV].readOnly();
+	data_reg[EPC].readOnly();
+	
 
 	// TODO: initialise function pointers
 	/*instruction

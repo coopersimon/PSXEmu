@@ -76,6 +76,8 @@ cpu::cpu(memoryInterface *memIn)
 
 void cpu::stepCPU()
 {
+      // set exception PC
+      setEPC();
 	// get instruction from mem & advance PC
 	instruction = memory->readWordLittle(PC.read());
 	PC.write(PC_next.read());
@@ -96,13 +98,15 @@ void cpu::stepCPU()
 		}
 	}
 	catch (psException &e) {
+            std::cout << e.execode() << std::endl;
 		// set BD
+            SCC.data_reg[scc::CAUSE].writeBits(branch_delay, 31, 1);
 		// set CE
-		SCC.data_reg[scc::CAUSE].writeBits(28, 2, coproc());
+		SCC.data_reg[scc::CAUSE].writeBits(coproc(), 28, 2);
 		// set IP
 		// set SW
 		// set EXECODE
-		SCC.data_reg[scc::CAUSE].writeBits(2, 5, e.execode());
+		SCC.data_reg[scc::CAUSE].writeBits(e.execode(), 2, 5);
 	}
 
 	incrementPCNext();
@@ -586,33 +590,33 @@ void cpu::SWCz()
 		memory->writeWordBig( address, cop[coproc()]->readDataReg(target_val()) );
 }
 
-/*void cpu::MTCz()
+void cpu::MTCz()
 {
 	// write coproc reg "dest()"
-	cop[coproc()]->storeDataReg(reg[target()].read(), dest());
+	cop[coproc()]->writeDataReg(target(), dest_val());
 }
 
 void cpu::MFCz()
 {
 	// write proc reg "dest()"
-	word data = cop[coproc()]->loadDataReg(target());
-	reg[dest()].write(data);
+	word data = cop[coproc()]->readDataReg(target_val());
+	dest(data);
 }
 
 void cpu::CTCz()
 {
 	// write control coproc reg "dest()"
-	cop[coproc()]->storeControlReg(reg[target()].read(), dest());
+	cop[coproc()]->writeControlReg(target(), dest_val());
 }
 
 void cpu::CFCz()
 {
 	// write proc reg "dest()"
-	word data = cop[coproc()]->loadControlReg(target());
-	reg[dest()].write(data);
+	word data = cop[coproc()]->readControlReg(target_val());
+	dest(data);
 }
 
-void cpu::COPz()
+/*void cpu::COPz()
 {
 	cop[coproc]->executeInstruction(instruction);
 }*/
