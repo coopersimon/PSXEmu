@@ -15,6 +15,11 @@
 #include <vector>
 #include <functional>
 
+namespace test
+{
+      class CPUtestbench;
+};
+
 // TODO: namespace!
 
 // class used to represent the R3051 CPU
@@ -206,6 +211,9 @@ private:
 	void CFCz(); // o 0x10-3, s 0x02
 	void COPz(); // o 0x10-3 - called on the coprocessor directly
 
+
+      /*** TESTING ***/
+      friend test::CPUtestbench;
 };
 
 #endif

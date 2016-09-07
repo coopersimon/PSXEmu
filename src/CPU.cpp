@@ -1,5 +1,4 @@
 #include "CPU.h"
-//#include "Memory.h"
 #include "PSException.h"
 #include <iostream>
 
@@ -55,7 +54,6 @@ cpu::cpu(memoryInterface *memIn)
 		&cpu::LBU, &cpu::LHU, &cpu::LWR, &cpu::RESERVED,
 		&cpu::SB, &cpu::SH, &cpu::SWL, &cpu::SW,
 		&cpu::RESERVED, &cpu::RESERVED, &cpu::SWR, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,  
 		&cpu::LWCz, &cpu::LWCz, &cpu::LWCz, &cpu::LWCz,
 		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
 		&cpu::SWCz, &cpu::SWCz, &cpu::SWCz, &cpu::SWCz,

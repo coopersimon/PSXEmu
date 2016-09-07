@@ -46,6 +46,8 @@ protected:
 class memoryInterface
 {
 public:
+      virtual ~memoryInterface() {}
+
 	virtual byte readByte(unsigned address) = 0;
 	virtual void writeByte(unsigned address, byte in) = 0;
 
@@ -58,7 +60,6 @@ public:
 	virtual void writeWordLittle(unsigned address, word in) = 0;
 	virtual word readWordBig(unsigned address) = 0;
 	virtual void writeWordBig(unsigned address, word in) = 0;
-
 };
 
 // TODO: double check if inhereiting from interface is correct call
@@ -73,7 +74,6 @@ class memBus : public memoryInterface
 		memoryInterface *memory_device;
 		memoryPointer(unsigned addr_start, unsigned  addr_end, memoryInterface *mem_dev): address_start(addr_start), address_end(addr_end), memory_device(mem_dev){}; 
 	};
-
 
 public:
 	std::vector<memoryPointer> bus_list;
@@ -96,7 +96,6 @@ public:
 	void writeWordLittle(unsigned address, word in);
 	word readWordBig(unsigned address);
 	void writeWordBig(unsigned address, word in);
-
 };
 
 // this represents RAM
@@ -112,7 +111,6 @@ class RAMImpl : public rawMemory<byte>, public memoryInterface
 public:
 	// input number of bits for addressing. memory is stored in terms of data size.
 	RAMImpl(unsigned addr_bits_in) : rawMemory(1 << addr_bits_in), addr_bits(addr_bits_in) {};
-
 
 	byte readByte(unsigned address);
 	void writeByte(unsigned address, byte in);

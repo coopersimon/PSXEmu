@@ -1,11 +1,8 @@
 CC=g++
 CFLAGS=-std=c++11 -Iinclude
 
-all : test
+all : test1
 
 # test building the cpu
-test3 : test3.cpp
-	$(CC) $(CFLAGS) test3.cpp src/CPU.cpp src/Memory.cpp src/SCC.cpp -o testout
-
-test2 : test2.cpp
-	$(CC) $(CFLAGS) test2.cpp src/CPU.cpp src/Memory.cpp src/SCC.cpp -o testout
+test1 : test/cpu/Test1.cpp
+	$(CC) $(CFLAGS) test/cpu/Test1.cpp test/cpu/TestCPU.cpp src/CPU.cpp src/Memory.cpp src/SCC.cpp -o test1
