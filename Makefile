@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-std=c++11 -Iinclude
+CFLAGS=-std=c++11 -Iinclude -Wall
 
 all : test1
 

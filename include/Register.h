@@ -8,7 +8,7 @@
  *
  */
 
-#include "Memory.h"
+#include <Memory.h>
 
 template <typename T>
 class regCommon
@@ -18,9 +18,9 @@ protected:
 	T data;
 
 public:
-      regCommon() : data(0) {};
+      regCommon() : data(0) {}
 
-	regCommon(T set_data) : data(set_data) {};
+	regCommon(T set_data) : data(set_data) {}
 
 	inline T read() const
 	{
@@ -40,8 +40,8 @@ protected:
 	word mask;
 
 public:
-	MIPSReg() : mask(0xFFFFFFFF), regCommon() {};
-	MIPSReg(word set_data, word mask_in) : mask(mask_in), regCommon(set_data) {};
+	MIPSReg() : regCommon(), mask(0xFFFFFFFF) {}
+	MIPSReg(word set_data, word mask_in) : regCommon(set_data), mask(mask_in) {}
 
 	void setMask(word mask_in)
 	{

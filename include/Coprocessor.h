@@ -9,8 +9,8 @@
  */
 
 // includes
-#include "Register.h"
-#include "PSException.h"
+#include <Register.h>
+#include <PSException.h>
 
 // generic empty coprocessor class
 class coprocessor

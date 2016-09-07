@@ -1,4 +1,4 @@
-#include "SCC.h"
+#include <SCC.h>
 
 void SCCReg::writeBits(word data_in, unsigned lower_bit, unsigned bits_to_write)
 {

@@ -72,7 +72,8 @@ class memBus : public memoryInterface
 		unsigned address_start;
 		unsigned address_end;
 		memoryInterface *memory_device;
-		memoryPointer(unsigned addr_start, unsigned  addr_end, memoryInterface *mem_dev): address_start(addr_start), address_end(addr_end), memory_device(mem_dev){}; 
+		memoryPointer(unsigned addr_start, unsigned  addr_end, memoryInterface *mem_dev) :
+                  address_start(addr_start), address_end(addr_end), memory_device(mem_dev) {} 
 	};
 
 public:

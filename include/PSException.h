@@ -1,9 +1,6 @@
 #ifndef PS_EXCEPTION_H
 #define PS_EXCEPTION_H
 
-#include <stdexcept>
-//#include <exception>
-
 /*
  *	PSException.h
  *

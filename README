@@ -1,6 +1,8 @@
 Core CPU is basically done. Coproc communication needs to be sorted out.
 
-CPU needs to be tested in depth
+CPU needs to be tested in depth: the testbench is written and tests can be written to! Don't be afraid to write tests
+
+
 Next up: GTE and Cop0. And GPU.
 
 Documentation:

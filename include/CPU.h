@@ -9,9 +9,9 @@
  */
 
 // includes
-#include "SCC.h"
-#include "Memory.h"
-#include "Register.h"
+#include <SCC.h>
+#include <Memory.h>
+#include <Register.h>
 #include <vector>
 #include <functional>
 
@@ -82,7 +82,7 @@ private:
 	inline void branchRoutine(s_halfword in)
 	{
 		s_word result = in << 2;
-		PC_next.write(PC_next.read() + in - 4);
+		PC_next.write(PC_next.read() + result - 4);
             //branch_delay = true;
 	}
 

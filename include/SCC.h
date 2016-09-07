@@ -9,8 +9,8 @@
  */
 
 // includes
-#include "Coprocessor.h"
-#include "Register.h"
+#include <Coprocessor.h>
+#include <Register.h>
 #include <vector>
 #include <functional>
 
@@ -21,8 +21,8 @@ class SCCReg : public MIPSReg
       bool read_only;
 
 public:
-	SCCReg() : read_only(false), MIPSReg() {}
-	SCCReg(word set_data, word mask_in) : read_only(false), MIPSReg(set_data, mask_in) {}
+	SCCReg() : MIPSReg(), read_only(false){}
+	SCCReg(word set_data, word mask_in) : MIPSReg(set_data, mask_in), read_only(false) {}
 
       void readOnly()
       {

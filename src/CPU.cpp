@@ -1,5 +1,5 @@
-#include "CPU.h"
-#include "PSException.h"
+#include <CPU.h>
+#include <PSException.h>
 #include <iostream>
 
 
@@ -528,7 +528,7 @@ void cpu::JALR()
 /********** Set ***********************/
 void cpu::SLT()
 {
-	word result = (s_word(source()) < target());
+	word result = (s_word(source()) < s_word(target()));
 	dest(result);
 }
 
@@ -548,7 +548,7 @@ void cpu::SLTI()
 void cpu::SLTIU()
 {
 	s_word imm32 = imm();
-	word result = (source() < imm32);
+	word result = (source() < word(imm32));
 	target(result);
 }
 

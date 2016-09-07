@@ -53,7 +53,7 @@ void CPUtestbench::noOp()
 
 void CPUtestbench::run()
 {
-      for (int i = 0; i < instr_count; i++)
+      for (unsigned i = 0; i < instr_count; i++)
             device->stepCPU();
 }
 
