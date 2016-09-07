@@ -12,6 +12,7 @@ int main()
 	// add reg 1 & 2 to force overflow
 	mem->writeWordLittle(8, 0x00220820);
 
+	mem->print();
 	cpu processor(mem);
 	processor.stepCPU();
 	processor.stepCPU();

@@ -83,7 +83,6 @@ void cpu::stepCPU()
 	PC.write(PC_next.read());
 	// decode instruction
 	word opcode = (instruction >> 26) & 0x3F;
-
 	try {
 		if (opcode == 0)
 		{
@@ -98,7 +97,6 @@ void cpu::stepCPU()
 		}
 	}
 	catch (psException &e) {
-            std::cout << e.execode() << std::endl;
 		// set BD
             SCC.data_reg[scc::CAUSE].writeBits(branch_delay, 31, 1);
 		// set CE

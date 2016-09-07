@@ -74,9 +74,9 @@ class memBus : public memoryInterface
 		memoryPointer(unsigned addr_start, unsigned  addr_end, memoryInterface *mem_dev): address_start(addr_start), address_end(addr_end), memory_device(mem_dev){}; 
 	};
 
-	std::vector<memoryPointer> bus_list;
 
 public:
+	std::vector<memoryPointer> bus_list;
 	// the memory devices are not owned by the bus so we don't have to delete them afterwards
 	void mountMemory(memoryInterface *memory_device, unsigned address_start, unsigned address_end)
 		{ bus_list.push_back(memoryPointer(address_start, address_end, memory_device)); }
@@ -112,6 +112,7 @@ class RAMImpl : public rawMemory<byte>, public memoryInterface
 public:
 	// input number of bits for addressing. memory is stored in terms of data size.
 	RAMImpl(unsigned addr_bits_in) : rawMemory(1 << addr_bits_in), addr_bits(addr_bits_in) {};
+
 
 	byte readByte(unsigned address);
 	void writeByte(unsigned address, byte in);

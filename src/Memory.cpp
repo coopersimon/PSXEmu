@@ -1,27 +1,27 @@
 #include "Memory.h"
 #include "PSException.h"
-//#include <iostream>
+#include <iostream>
 
 // TODO: dealing with multiple bytes might need improvement. this needs to be quick.
 // these also need to be carefully tested. casting etc
 
 int memBus::find(unsigned address)
 {
+	//std::cout << "address: " << address << std::endl;
 	for (int i = 0; i < bus_list.size(); i++)
 	{
-		int addr_start = (address & bus_list[i].address_start) - bus_list[i].address_start;
-		int addr_end = (address & bus_list[i].address_end) - bus_list[i].address_end;
-		if ((!addr_start) && (!addr_end))
+		if ((address >= bus_list[i].address_start) && (address <= bus_list[i].address_end))
 		{
 			return i;
 		}
 	}		
 	//TODO: pick proper exception
+	throw adesException();
 }
 
 byte memBus::readByte(unsigned address)
 {
-	bus_list[find(address)].memory_device->readByte(address);
+	return bus_list[find(address)].memory_device->readByte(address);
 }
 
 void memBus::writeByte(unsigned address, byte in)
@@ -31,7 +31,7 @@ void memBus::writeByte(unsigned address, byte in)
 
 halfword memBus::readHalfwordLittle(unsigned address)
 {
-	bus_list[find(address)].memory_device->readHalfwordLittle(address);
+	return bus_list[find(address)].memory_device->readHalfwordLittle(address);
 }
 
 void memBus::writeHalfwordLittle(unsigned address, halfword in)
@@ -41,7 +41,7 @@ void memBus::writeHalfwordLittle(unsigned address, halfword in)
 
 halfword memBus::readHalfwordBig(unsigned address)
 {
-	bus_list[find(address)].memory_device->readHalfwordBig(address);
+	return bus_list[find(address)].memory_device->readHalfwordBig(address);
 }
 
 void memBus::writeHalfwordBig(unsigned address, halfword in)
@@ -51,7 +51,7 @@ void memBus::writeHalfwordBig(unsigned address, halfword in)
 
 word memBus::readWordLittle(unsigned address)
 {
-	bus_list[find(address)].memory_device->readWordLittle(address);
+	return bus_list[find(address)].memory_device->readWordLittle(address);
 }
 
 void memBus::writeWordLittle(unsigned address, word in)
@@ -61,7 +61,7 @@ void memBus::writeWordLittle(unsigned address, word in)
 
 word memBus::readWordBig(unsigned address)
 {
-	bus_list[find(address)].memory_device->readWordBig(address);
+	return bus_list[find(address)].memory_device->readWordBig(address);
 }
 
 void memBus::writeWordBig(unsigned address, word in)
