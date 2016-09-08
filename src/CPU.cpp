@@ -94,7 +94,8 @@ void cpu::stepCPU()
 			i_type[opcode](this);
 		}
 	}
-	catch (psException &e) {
+	catch (psException &e)
+      {
 		// set BD
             SCC.data_reg[scc::CAUSE].writeBits(branch_delay, 31, 1);
 		// set CE
@@ -103,18 +104,48 @@ void cpu::stepCPU()
 		// set SW
 		// set EXECODE
 		SCC.data_reg[scc::CAUSE].writeBits(e.execode(), 2, 5);
+
+            // move prev to old
+            word KUp = (SCC.data_reg[scc::SR].read() >> 3) & 1;
+            word IEp = (SCC.data_reg[scc::SR].read() >> 2) & 1;
+            SCC.data_reg[scc::SR].writeBits(KUp, 5, 1);
+            SCC.data_reg[scc::SR].writeBits(IEp, 4, 1);
+            
+            // move current to prev
+            word KUc = (SCC.data_reg[scc::SR].read() >> 1) & 1;
+            word IEc = (SCC.data_reg[scc::SR].read() >> 0) & 1;
+            SCC.data_reg[scc::SR].writeBits(KUp, 3, 1);
+            SCC.data_reg[scc::SR].writeBits(IEp, 2, 1);
+
+            // set current
+            SCC.data_reg[scc::SR].writeBits(0, 1, 1);
+            SCC.data_reg[scc::SR].writeBits(0, 1, 0);
+
+            // jump to exception handler
+            // if BEV == 1
+            if ((SCC.data_reg[scc::SR].read() >> 22) & 1)
+            {
+                  PC.write(0x1FC00180);
+                  PC_next.write(0x1FC00184);
+            }
+            // if BEV == 0
+            else
+            {
+                  PC.write(0x00000080);
+                  PC_next.write(0x00000084);
+            }
 	}
 
 	incrementPCNext();
 }
 
+
+/*** Instructions **************/
+
 void cpu::RESERVED()
 {
 	throw riException();
 }
-
-
-/*** Instructions **************/
 
 /********** Add/Subtract **************/
 void cpu::ADD()
@@ -126,11 +157,13 @@ void cpu::ADD()
 	}
 	dest(result);
 }
+
 void cpu::ADDU()
 {
 	word result = source() + target();
 	dest(result);
 }
+
 void cpu::ADDI()
 {
 	word result = source() + imm();
@@ -141,11 +174,13 @@ void cpu::ADDI()
 	}
 	target(result);
 }
+
 void cpu::ADDIU()
 {
 	word result = source() + imm();
 	target(result);
 }
+
 void cpu::SUB()
 {
 	word result = source() - target();
@@ -156,6 +191,7 @@ void cpu::SUB()
 	}
 	dest(result);
 }
+
 void cpu::SUBU()
 {
 	word result = source() - target();
@@ -171,6 +207,7 @@ void cpu::MULT()
 	LO.write(result & 0xFFFFFFFF);
 	HI.write(result >> 32);
 }
+
 void cpu::MULTU()
 {
 	doubleword source64 = source(); // cast to 64 bit value
