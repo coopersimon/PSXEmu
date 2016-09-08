@@ -48,7 +48,7 @@ class scc : public coprocessor
 	// cpu needs to access registers
 	friend cpu;
 
-	// generic pointers to all the registers
+	// registers
 	SCCReg data_reg[16];
 
 	// function pointer
@@ -69,6 +69,7 @@ private:
 	void TLBP();
 	void RFE();
 
+public:
 	enum
 	{
 		INDX = 0,
