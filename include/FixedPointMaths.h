@@ -33,6 +33,13 @@ class fixedPoint
 public:
       // public constructor
       fixedPoint(word value, unsigned int_bits, unsigned frac_bits);
+      
+      // check the fixed point value is not using more than [bits]
+      // if it is, saturate the value
+      bool checkSaturation(unsigned bits);
+
+      // check the sign of the value
+      bool checkSign() { return sign; }
 
       // operations
       static fixedPoint multiply(fixedPoint a, fixedPoint b);

@@ -10,24 +10,70 @@
 
 // includes
 #include <Coprocessor.h>
-#include <Register.h>
+#include <FixedPointMaths.h>
 #include <vector>
 #include <functional>
+#include <list>
 
 // TODO: some way of stalling the cpu if it tries to execute gte command before the gte is finished with the last one
 
-
-
-// Unknown if MSB is simply pos/neg, or if 2s complement is used
-class GTEReg : public MIPSReg
+// GTERegs are like CoprocessorRegs with some extra access functions
+class GTEReg : public CoprocessorReg
 {
-      
+public:
+      GTEReg() : CoprocessorReg() {}
+
+      inline word readByte0() const { return data & 0x000000FF; }
+      inline word readByte1() const { return data & 0x0000FF00; }
+      inline word readByte2() const { return data & 0x00FF0000; }
+      inline word readByte3() const { return data & 0xFF000000; }
+
+      inline void writeByte0(word in) { data &= 0xFFFFFF00; data |= (in & 0x000000FF); }
+      inline void writeByte1(word in) { data &= 0xFFFF00FF; data |= (in & 0x0000FF00); }
+      inline void writeByte2(word in) { data &= 0xFF00FFFF; data |= (in & 0x00FF0000); }
+      inline void writeByte3(word in) { data &= 0x00FFFFFF; data |= (in & 0xFF000000); }
+
+      inline word readLowerHalfword() const { return data & 0x0000FFFF; }
+      inline word readUpperHalfword() const { return data & 0xFFFF0000; }
+
+      inline void writeLowerHalfword(word in) { data &= 0xFFFF0000; data |= (in & 0x0000FFFF); }
+      inline void writeUpperHalfword(word in) { data &= 0x0000FFFF; data |= (in & 0xFFFF0000); }
+}
+
+// GTEDataRegs are like GTERegs with FIFO chains
+class GTEDataReg : public GTEReg
+{
+      std::list<GTEDataReg*> FIFO_chain;
+      GTEDataReg *mirror;
 
 public:
-      GTEReg() : MIPSReg() {}
+      GTEDataReg() : GTEReg(), mirror(NULL) {}
 
-      
+      void addFIFOReg(const GTEDataReg* in) { FIFO_chain.push_back(in); }
 
+      void addFIFOMirror(const GTEDataReg* in) { mirror = in; }
+
+      inline void write(word in)
+      {
+            if (FIFO_down.empty())
+            {
+                  data = in;
+            }
+            else
+            {
+                  word previous_data = data;
+                  for (auto i : FIFO_chain)
+                  {
+                        data = i->read();
+                        i->write(previous_data);
+                        previous_data = data;
+                  }
+
+                  if (mirror)
+                        mirror->write(in);
+                  data = in;
+            }
+      } 
 };
 
 // note: multiplying fixed point numbers:
@@ -38,8 +84,8 @@ public:
 class gte : public coprocessor
 {
       // registers. NOT general purpose
-	reg32 data_reg[32];
-	reg32 control_reg[32];
+      GTEReg control_reg[32];
+	GTEDataReg data_reg[32];
 
       // function pointers
       std::vector<std::function<void(gte*)>> opcodes;
@@ -73,6 +119,24 @@ private:
       inline unsigned lm() const { return (instruction >> 10) & 1; }
       inline unsigned GTECommand() const { return instruction & 0x3F; }
 
+      // Bit truncating, sets bits in FLAG register
+      void A1(fixedPoint &input);
+      void A2(fixedPoint &input);
+      void A3(fixedPoint &input);
+      void B1(fixedPoint &input);
+      void B2(fixedPoint &input);
+      void B3(fixedPoint &input);
+      void C1(fixedPoint &input);
+      void C2(fixedPoint &input);
+      void C3(fixedPoint &input);
+      void D(fixedPoint &input);
+      void E(fixedPoint &input);
+      void F(fixedPoint &input);
+      void G1(fixedPoint &input);
+      void G2(fixedPoint &input);
+      void H(fixedPoint &input);
+
+
       // TODO: instructions (easy!....)
 	// instructions
       void RESERVED();
@@ -105,75 +169,35 @@ public:
       // control regs
       enum
       {
-            R11R12 = 0,
-            R13R21,
-            R22R23,
-            R31R32,
-            R33,
-            TRX,
-            TRY,
-            TRZ,
-            L11L12,
-            L13L21,
-            L22L23,
-            L31L32,
-            L33,
-            RBK,
-            GBK,
-            BBK,
-            LR1LR2,
-            LR3LG1,
-            LG2LG3,
-            LB1LB2,
-            LB3,
-            RFC,
-            GFC,
-            BFC,
-            OFX,
-            OFY,
+            R11R12 = 0, R13R21, R22R23, R31R32, R33,
+            TRX, TRY, TRZ,
+            L11L12, L13L21, L22L23, L31L32, L33,
+            RBK, GBK, BBK,
+            LR1LR2, LR3LG1, LG2LG3, LB1LB2, LB3,
+            RFC, GFC, BFC,
+            OFX, OFY,
             H,
-            DQA,
-            DQB,
-            ZSF3,
-            ZSF4,
+            DQA, DQB,
+            ZSF3, ZSF4,
             FLAG
       };
 
       // data regs
       enum
       {
-            VXY0 = 0,
-            VZ0,
-            VXY1,
-            VZ1,
-            VXY2,
-            VZ2,
+            VXY0 = 0, VZ0,
+            VXY1, VZ1,
+            VXY2, VZ2,
             RGB,
             OTZ,
-            IR0,
-            IR1,
-            IR2,
-            IR3,
-            SXY0,
-            SXY1,
-            SXY2,
-            SXYP,
-            SZ0,
-            SZ1,
-            SZ2,
-            SZ3,
-            RGB0,
-            RGB1,
-            RGB2,
+            IR0, IR1, IR2, IR3,
+            SXY0, SXY1, SXY2, SXYP,
+            SZ0, SZ1, SZ2, SZ3,
+            RGB0, RGB1, RGB2,
             RES1,
-            MAC0,
-            MAC1,
-            MAC2,
-            MAC3,
-            IRGB,
-            ORGB,
-            LZCS,
-            LZCR
+            MAC0, MAC1, MAC2, MAC3,
+            IRGB, ORGB,
+            LZCS, LZCR
       };
 };
 
