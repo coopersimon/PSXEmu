@@ -4,10 +4,11 @@ Overall:
 
 Simon:
 	SCC working and completion
-	GTE
+      GTE: Write fixed point maths system
+            - preferably without floating point
+      GTE: Sort out register FIFOs
+      GTE: Instructions
 
 Diederik:
 	Build testbench
 	GPU
-
-Jesus:

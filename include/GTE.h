@@ -10,34 +10,73 @@
 
 // includes
 #include <Coprocessor.h>
+#include <Register.h>
 #include <vector>
 #include <functional>
 
-class cpu;
+// TODO: some way of stalling the cpu if it tries to execute gte command before the gte is finished with the last one
+
+
+
+// Unknown if MSB is simply pos/neg, or if 2s complement is used
+class GTEReg : public MIPSReg
+{
+      
+
+public:
+      GTEReg() : MIPSReg() {}
+
+      
+
+};
+
+// note: multiplying fixed point numbers:
+// multiply together, shift value to the right by 12
+
 
 // gte: cop2, deals with vector and matrix transformations
 class gte : public coprocessor
 {
-      // gte needs to access registers
-      friend cpu;
-
       // registers. NOT general purpose
 	reg32 data_reg[32];
 	reg32 control_reg[32];
 
       // function pointers
-      std::vector<std::function<void(gte*)>> instruction;
+      std::vector<std::function<void(gte*)>> opcodes;
+
+      // instruction
+      unsigned instruction;
+
+      // count cycles down before next gte instruction can run
+      //unsigned cycle_countdown;
+      // TODO: along with something like void countCycle() {cycle_countdown--;}
 
 public:
+      // TODO: constructor, register instructions
+      gte();
+
 	// register transfers
 	void writeDataReg(word data_in, unsigned dest_reg);
-	word readDataReg(unsigned source_reg);
+	word readDataReg(unsigned source_reg) const;
 	void writeControlReg(word data_in, unsigned dest_reg);
-	word readControlReg(unsigned source_reg);
-	void executeInstruction(unsigned instruction);
+	word readControlReg(unsigned source_reg) const;
+
+      // decode and run instruction
+      void executeInstruction(unsigned instruction);
 
 private:
+      // inline functions
+      inline unsigned shiftFraction() const { return (instruction >> 19) & 1; }
+      inline unsigned MVMVAMultiplyMatrix() const { return (instruction >> 17) & 3; }
+      inline unsigned MVMVAMultiplyVector() const { return (instruction >> 15) & 3; }
+      inline unsigned MVMVATranslationVector() const { return (instruction >> 13) & 3; }
+      inline unsigned lm() const { return (instruction >> 10) & 1; }
+      inline unsigned GTECommand() const { return instruction & 0x3F; }
+
+      // TODO: instructions (easy!....)
 	// instructions
+      void RESERVED();
+
       void RTPS();
       void RTPT();
       void MVMVA();
@@ -63,7 +102,7 @@ private:
 
 public:
 
-      // 
+      // control regs
       enum
       {
             R11R12 = 0,
@@ -100,6 +139,7 @@ public:
             FLAG
       };
 
+      // data regs
       enum
       {
             VXY0 = 0,

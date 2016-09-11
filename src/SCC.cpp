@@ -75,7 +75,7 @@ void TLBP()
 {
 }
 
-void RFE()
+void scc::RFE()
 {
       // move prev to current
       word KUp = (data_reg[SR].read() >> 3) & 1;

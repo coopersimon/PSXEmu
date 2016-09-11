@@ -17,11 +17,11 @@ class coprocessor
 {
 public:
 	// register transfers
-	void writeDataReg(word data_in, unsigned dest_reg) { throw new cpuException; }
-	word readDataReg(unsigned source_reg) { throw new cpuException; }
-	void writeControlReg(word data_in, unsigned dest_reg) { throw new cpuException; }
-	word readControlReg(unsigned source_reg) { throw new cpuException; }
-	void executeInstruction(unsigned instruction) { throw new cpuException; }
+	void writeDataReg(word data_in, unsigned dest_reg) { throw cpuException(); }
+	word readDataReg(unsigned source_reg) const { throw cpuException(); }
+	void writeControlReg(word data_in, unsigned dest_reg) { throw cpuException(); }
+	word readControlReg(unsigned source_reg) const { throw cpuException(); }
+	void executeInstruction(unsigned instruction) { throw cpuException(); }
 };
 
 #endif

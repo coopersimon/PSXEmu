@@ -14,6 +14,7 @@
 #include <vector>
 #include <functional>
 
+// forward declaration
 class cpu;
 
 class SCCReg : public MIPSReg
