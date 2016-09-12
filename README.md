@@ -7,5 +7,11 @@ Fixed Point mult, add and sub for GTE is supposedly done. Simple tests have been
 Next up: GTE and GPU.
 
 Documentation:
+
 	[Everything you have always wanted to know...](http://gamehacking.org/faqs/PSX.pdf)
+
 	[In depth documentation](http://problemkaputt.de/psx-spx.htm)
+
+      [Vulkan Spec](https://www.khronos.org/registry/vulkan/specs/1.0/pdf/vkspec.pdf)
+
+      [Vulkan Spec html](https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html)

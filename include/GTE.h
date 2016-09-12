@@ -23,22 +23,24 @@ class GTEReg : public CoprocessorReg
 public:
       GTEReg() : CoprocessorReg() {}
 
-      inline word readByte0() const { return data & 0x000000FF; }
-      inline word readByte1() const { return data & 0x0000FF00; }
-      inline word readByte2() const { return data & 0x00FF0000; }
-      inline word readByte3() const { return data & 0xFF000000; }
+      inline byte readByte0() const { return data & 0xFF; }
+      inline byte readByte1() const { return (data >> 8) & 0xFF; }
+      inline byte readByte2() const { return (data >> 16) & 0xFF; }
+      inline byte readByte3() const { return (data >> 24) & 0xFF; }
 
-      inline void writeByte0(word in) { data &= 0xFFFFFF00; data |= (in & 0x000000FF); }
-      inline void writeByte1(word in) { data &= 0xFFFF00FF; data |= (in & 0x0000FF00); }
-      inline void writeByte2(word in) { data &= 0xFF00FFFF; data |= (in & 0x00FF0000); }
-      inline void writeByte3(word in) { data &= 0x00FFFFFF; data |= (in & 0xFF000000); }
+      inline void writeByte0(word in) { data &= 0xFFFFFF00; data |= in & 0x000000FF; }
+      inline void writeByte1(word in) { data &= 0xFFFF00FF; data |= (in << 8) & 0x0000FF00; }
+      inline void writeByte2(word in) { data &= 0xFF00FFFF; data |= (in << 16) & 0x00FF0000; }
+      inline void writeByte3(word in) { data &= 0x00FFFFFF; data |= (in << 24) & 0xFF000000; }
 
-      inline word readLowerHalfword() const { return data & 0x0000FFFF; }
-      inline word readUpperHalfword() const { return data & 0xFFFF0000; }
+      inline halfword readLowerHalfword() const { return data & 0xFFFF; }
+      inline halfword readUpperHalfword() const { return (data >> 16) & 0xFFFF; }
 
-      inline void writeLowerHalfword(word in) { data &= 0xFFFF0000; data |= (in & 0x0000FFFF); }
-      inline void writeUpperHalfword(word in) { data &= 0x0000FFFF; data |= (in & 0xFFFF0000); }
-}
+      inline void writeLowerHalfword(word in) { data &= 0xFFFF0000; data |= in & 0x0000FFFF; }
+      inline void writeUpperHalfword(word in) { data &= 0x0000FFFF; data |= (in << 16) & 0xFFFF0000; }
+
+      //inline word read() const { return data; } // needed to remove template ambiguity
+};
 
 // GTEDataRegs are like GTERegs with FIFO chains
 class GTEDataReg : public GTEReg
@@ -49,13 +51,13 @@ class GTEDataReg : public GTEReg
 public:
       GTEDataReg() : GTEReg(), mirror(NULL) {}
 
-      void addFIFOReg(const GTEDataReg* in) { FIFO_chain.push_back(in); }
+      void addFIFOReg(GTEDataReg* in) { FIFO_chain.push_back(in); }
 
-      void addFIFOMirror(const GTEDataReg* in) { mirror = in; }
+      void addFIFOMirror(GTEDataReg* in) { mirror = in; }
 
       inline void write(word in)
       {
-            if (FIFO_down.empty())
+            if (FIFO_chain.empty())
             {
                   data = in;
             }
@@ -116,15 +118,15 @@ private:
       inline unsigned MVMVAMultiplyMatrix() const { return (instruction >> 17) & 3; }
       inline unsigned MVMVAMultiplyVector() const { return (instruction >> 15) & 3; }
       inline unsigned MVMVATranslationVector() const { return (instruction >> 13) & 3; }
-      inline unsigned lm() const { return (instruction >> 10) & 1; }
+      inline bool lm() const { return (instruction >> 10) & 1; }
       inline unsigned GTECommand() const { return instruction & 0x3F; }
 
       // Bit truncating, sets bits in FLAG register
-      void A1(fixedPoint &input);
-      void A2(fixedPoint &input);
-      void A3(fixedPoint &input);
-      void B1(fixedPoint &input);
-      void B2(fixedPoint &input);
+      fixedPoint A1(const fixedPoint &input);
+      fixedPoint A2(const fixedPoint &input);
+      fixedPoint A3(const fixedPoint &input);
+      fixedPoint B1(fixedPoint &input);
+      fixedPoint B2(fixedPoint &input);
       void B3(fixedPoint &input);
       void C1(fixedPoint &input);
       void C2(fixedPoint &input);
@@ -134,7 +136,7 @@ private:
       void F(fixedPoint &input);
       void G1(fixedPoint &input);
       void G2(fixedPoint &input);
-      void H(fixedPoint &input);
+      void Hx(fixedPoint &input);
 
 
       // TODO: instructions (easy!....)
@@ -144,7 +146,7 @@ private:
       void RTPS();
       void RTPT();
       void MVMVA();
-      void DPCL();
+      void DCPL();
       void DPCS();
       void DPCT();
       void INTPL();

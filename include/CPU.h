@@ -10,6 +10,7 @@
 
 // includes
 #include <SCC.h>
+#include <GTE.h>
 #include <Memory.h>
 #include <Register.h>
 #include <vector>
@@ -37,7 +38,7 @@ class cpu
 
 	/*** Coprocessors ***/
 	scc SCC;
-	// gte GTE;
+	gte GTE;
 	// generic pointers for load/store
 	coprocessor * cop[4];
 

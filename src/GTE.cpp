@@ -63,99 +63,157 @@ void gte::executeInstruction(unsigned instruction_in)
 }
 
 
-void gte::A1(fixedPoint &input)
+fixedPoint gte::A1(const fixedPoint &input)
 {
       bool set_bit = input.checkBits(43);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 27, 1);
-           return;
       }
-      if (set_bit && !input.checkSign())
+      else if (set_bit && !input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 30, 1);
-           return;
       }
+      return input;
 }
 
-void gte::A2(fixedPoint &input)
+fixedPoint gte::A2(const fixedPoint &input)
 {
       bool set_bit = input.checkBits(43);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 26, 1);
-           return;
       }
-      if (set_bit && !input.checkSign())
+      else if (set_bit && !input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 29, 1);
-           return;
       }
+      return input;
 }
 
-void gte::A3(fixedPoint &input)
+fixedPoint gte::A3(const fixedPoint &input)
 {
       bool set_bit = input.checkBits(43);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 25, 1);
-           return;
       }
-      if (set_bit && !input.checkSign())
+      else if (set_bit && !input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 28, 1);
-           return;
       }
+      return input;
 }
 
-// the B1 values may need to set negative values to 0.
-void gte::B1(fixedPoint &input)
+fixedPoint gte::B1(fixedPoint &input)
 {
-      if (lm() && input.checkSign())
+      if (input.checkSaturation(0x7FFF, lm()))
       {
             control_reg[FLAG].writeBits(1, 24, 1);
-            return;
       }
-      if (!lm() && input.checkBits(15))
-      {
-            control_reg[FLAG].writeBits(1, 24, 1);
-            return;
-      }
+      return input;
 }
 
-void gte::B2(fixedPoint &input)
+fixedPoint gte::B2(fixedPoint &input)
 {
-      if (lm() && input.checkSign())
+      if (input.checkSaturation(0x7FFF, lm()))
       {
             control_reg[FLAG].writeBits(1, 23, 1);
-            return;
       }
-      if (!lm() && input.checkBits(15))
-      {
-            control_reg[FLAG].writeBits(1, 23, 1);
-            return;
-      }
+      return input;
 }
 
 void gte::B3(fixedPoint &input)
 {
-      if (lm() && input.checkSign())
-      {
-            control_reg[FLAG].writeBits(1, 22, 1);
-            return;
-      }
-      if (!lm() && input.checkBits(15))
+      if (input.checkSaturation(0x7FFF, lm()))
       {
             control_reg[FLAG].writeBits(1, 22, 1);
             return;
       }
 }
 
+void gte::C1(fixedPoint &input)
+{
+      if (input.checkSaturation(0xFF, true))
+      {
+            control_reg[FLAG].writeBits(1, 21, 1);
+      }
+}
 
+void gte::C2(fixedPoint &input)
+{
+      if (input.checkSaturation(0xFF, true))
+      {
+            control_reg[FLAG].writeBits(1, 20, 1);
+      }
+}
 
+void gte::C3(fixedPoint &input)
+{
+      if (input.checkSaturation(0xFF, true))
+      {
+            control_reg[FLAG].writeBits(1, 19, 1);
+      }
+}
+
+void gte::D(fixedPoint &input)
+{
+      if (input.checkSaturation(0xFFFF, true))
+      {
+            control_reg[FLAG].writeBits(1, 18, 1);
+      }
+}
+
+void gte::E(fixedPoint &input)
+{
+}
+
+void gte::F(fixedPoint &input)
+{
+      bool set_bit = input.checkBits(31);
+      if (set_bit && input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 15, 1);
+           return;
+      }
+      if (set_bit && !input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 16, 1);
+           return;
+      }
+}
+
+void gte::G1(fixedPoint &input)
+{
+      if (input.checkSaturation(0x3FF, false))
+      {
+            control_reg[FLAG].writeBits(1, 14, 1);
+      }
+}
+
+void gte::G2(fixedPoint &input)
+{
+      if (input.checkSaturation(0x3FF, false))
+      {
+            control_reg[FLAG].writeBits(1, 13, 1);
+      }
+}
+
+void gte::Hx(fixedPoint &input)
+{
+      if (input.checkSaturation(0x1000, true))
+      {
+            control_reg[FLAG].writeBits(1, 12, 1);
+      }
+}
 
 
 /***** INSTRUCTIONS *****/
+
+void gte::RESERVED()
+{
+}
+
 
 void gte::RTPS()
 {
@@ -172,18 +230,129 @@ void gte::MVMVA()
 
 void gte::DCPL()
 {
-      fixedPoint rgb(data_reg[RGB].readByte0(), 8, 0);
-      fixedPoint ir(data_reg[IR0].readLowerHalfword(), 3, 12);
-      fixedPoint fc(data_reg[RFC].read(), 27, 4);
-      fixedPoint rgbir = rgb * ir; // rgbir: 11.12
-      fixedPoint intermediate = fc - rgbir; // intermediate: 27.12
-      // now we check whether it's within 15 bits
-      // truncate to 11.4
-      // Lm_B1(intermediate)
+      fixedPoint rgb(data_reg[RGB].readByte0(), 0, false);
+      fixedPoint ir(data_reg[IR1].readLowerHalfword(), 12);
+      fixedPoint fc(control_reg[RFC].read(), 4);
+      fixedPoint ir0(data_reg[IR0].readLowerHalfword(), 12);
       
+      fixedPoint rgbir = rgb * ir; // rgbir: 11.12
+      rgbir.truncateFraction(4); // this shouldn't really be needed. subtraction might take care of it
+      fixedPoint intermediate = fc - rgbir; // intermediate: 27.4
+      B1(intermediate);
+      fixedPoint mac1 = rgbir + (ir0 * intermediate);
+      data_reg[MAC1].write(mac1.getAsWord(28, 4)); // maybe get as word should also truncate?
+
+      rgb = fixedPoint(data_reg[RGB].readByte1(), 0, false);
+      ir = fixedPoint(data_reg[IR2].readLowerHalfword(), 12);
+      fc = fixedPoint(control_reg[GFC].read(), 4);
+      
+      rgbir = rgb * ir;
+      rgbir.truncateFraction(4);
+      intermediate = fc - rgbir;
+      B2(intermediate);
+      fixedPoint mac2 = rgbir + (ir0 * intermediate);
+      data_reg[MAC2].write(mac2.getAsWord(28, 4));
+
+      rgb = fixedPoint(data_reg[RGB].readByte2(), 0, false);
+      ir = fixedPoint(data_reg[IR3].readLowerHalfword(), 12);
+      fc = fixedPoint(control_reg[BFC].read(), 4);
+      
+      rgbir = rgb * ir;
+      rgbir.truncateFraction(4);
+      intermediate = fc - rgbir;
+      B3(intermediate);
+      fixedPoint mac3 = rgbir + (ir0 * intermediate);
+      data_reg[MAC3].write(mac3.getAsWord(28, 4));
+
+      mac1.truncateFraction(4);
+      B1(mac1);
+      data_reg[IR1].writeLowerHalfword(mac1.getAsWord(12, 4));
+      mac2.truncateFraction(4);
+      B2(mac2);
+      data_reg[IR2].writeLowerHalfword(mac2.getAsWord(12, 4));
+      mac3.truncateFraction(4);
+      B3(mac3);
+      data_reg[IR3].writeLowerHalfword(mac3.getAsWord(12, 4));
+
+      word crgb = data_reg[RGB].readByte3() << 24;
+      C1(mac1);
+      crgb |= mac1.getAsWord(8, 0);
+      C2(mac2);
+      crgb |= mac2.getAsWord(8, 0) << 8;
+      C3(mac3);
+      crgb |= mac3.getAsWord(8, 0) << 16;
+
+      data_reg[RGB2].write(crgb);
 }
 
+void gte::DPCS()
+{
+}
 
+void gte::DPCT()
+{
+}
 
+void gte::INTPL()
+{
+}
 
+void gte::SQR()
+{
+}
 
+void gte::NCS()
+{
+}
+
+void gte::NCT()
+{
+}
+
+void gte::NCDS()
+{
+}
+
+void gte::NCDT()
+{
+}
+
+void gte::NCCS()
+{
+}
+
+void gte::NCCT()
+{
+}
+
+void gte::CDP()
+{
+}
+
+void gte::CC()
+{
+}
+
+void gte::NCLIP()
+{
+}
+
+void gte::AVSZ3()
+{
+}
+
+void gte::AVSZ4()
+{
+}
+
+void gte::OP()
+{
+}
+
+void gte::GPF()
+{
+}
+
+void gte::GPL()
+{
+}

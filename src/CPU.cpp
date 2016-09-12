@@ -11,7 +11,7 @@ cpu::cpu(memoryInterface *memIn)
 	
 	// initialse coprocessors
 	cop[0] = &SCC;
-	// cop[2] = new gte;
+	cop[2] = &GTE;
 	
 	// reg 0 is always 0
 	gp_reg[0].setMask(0x00000000);

@@ -57,5 +57,4 @@ public:
 typedef regCommon<word> reg32;
 typedef regCommon<halfword> reg16;
 
-
 #endif
