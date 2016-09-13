@@ -29,6 +29,8 @@ public:
       // run instructions in memory
       void run();
 
+      // store into a GP register
+      void storeReg(unsigned reg, word value);
       // retrieve the value of a GP register
       word getReg(unsigned reg);
       // self explanatory

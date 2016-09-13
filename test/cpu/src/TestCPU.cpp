@@ -58,6 +58,11 @@ void CPUtestbench::run()
 }
 
 
+void CPUtestbench::storeReg(unsigned reg, word value)
+{
+      device->gp_reg[reg].write(value);
+}
+
 word CPUtestbench::getReg(unsigned reg)
 {
       return device->gp_reg[reg].read();
