@@ -1,3 +1,6 @@
+#ifndef TEST_CPU_H
+#define TEST_CPU_H
+
 // used for testing CPU
 
 #include <CPU.h>
@@ -114,3 +117,5 @@ enum
 };
 
 }; // namespace test
+
+#endif

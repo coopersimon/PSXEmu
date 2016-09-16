@@ -15,6 +15,11 @@
 #include <functional>
 #include <list>
 
+namespace test
+{
+      class GTEtestbench;
+};
+
 // TODO: some way of stalling the cpu if it tries to execute gte command before the gte is finished with the last one
 
 // GTERegs are like CoprocessorRegs with some extra access functions
@@ -201,6 +206,9 @@ public:
             IRGB, ORGB,
             LZCS, LZCR
       };
+
+      // testing
+      friend test::GTEtestbench;
 };
 
 #endif

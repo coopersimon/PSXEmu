@@ -6,105 +6,103 @@
 // TODO: clever c++11 pointer stuff
 cpu::cpu(memoryInterface *memIn)
 {
-	// this pointer should be handled better - unique ptr perhaps
-	memory = memIn;
-	
-	// initialse coprocessors
-	cop[0] = &SCC;
-	cop[2] = &GTE;
-	
-	// reg 0 is always 0
-	gp_reg[0].setMask(0x00000000);
-
-	// initialise PC
-	PC.write(0);
-	PC_next.write(4);
-
-	// function pointers
-	r_type = {
-		&cpu::SLL, &cpu::RESERVED, &cpu::SRL, &cpu::SRA,
-		&cpu::SLLV, &cpu::RESERVED, &cpu::SRLV, &cpu::SRAV,
-		&cpu::JR, &cpu::JALR, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::SYSCALL, &cpu::BREAK, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::MFHI, &cpu::MTHI, &cpu::MFLO, &cpu::MTLO,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::MULT, &cpu::MULTU, &cpu::DIV, &cpu::DIVU,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::ADD, &cpu::ADDU, &cpu::SUB, &cpu::SUBU,
-		&cpu::AND, &cpu::OR, &cpu::XOR, &cpu::NOR,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::SLT, &cpu::SLTU,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED
-	};
-
-	i_type = {
-		&cpu::RESERVED, &cpu::BCOND, &cpu::J, &cpu::JAL,
-		&cpu::BEQ, &cpu::BNE, &cpu::BLEZ, &cpu::BGTZ,
-		&cpu::ADDI, &cpu::ADDIU, &cpu::SLTI, &cpu::SLTIU,
-		&cpu::ANDI, &cpu::ORI, &cpu::XORI, &cpu::LUI,
-		//&cpu::COPz, &cpu::COPz, &cpu::COPz, &cpu::COPz,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,	// TODO: remove when COPz is implemented
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
-		&cpu::LB, &cpu::LH, &cpu::LWL, &cpu::LW,
-		&cpu::LBU, &cpu::LHU, &cpu::LWR, &cpu::RESERVED,
-		&cpu::SB, &cpu::SH, &cpu::SWL, &cpu::SW,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::SWR, &cpu::RESERVED,
-		&cpu::LWCz, &cpu::LWCz, &cpu::LWCz, &cpu::LWCz,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
-		&cpu::SWCz, &cpu::SWCz, &cpu::SWCz, &cpu::SWCz,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED 
-	};
-
-	bcond_type = {
-		&cpu::BLTZ, &cpu::BGEZ, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::BLTZAL, &cpu::BGEZAL, &cpu::RESERVED, &cpu::RESERVED,
-		&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED      
-	};
-
-	// TODO: add in other function pointer(s)
+      // this pointer should be handled better - unique ptr perhaps
+      memory = memIn;
+      
+      // initialse coprocessors
+      cop[0] = &SCC;
+      cop[2] = &GTE;
+      
+      // reg 0 is always 0
+      gp_reg[0].setMask(0x00000000);
+      
+      // initialise PC
+      PC.write(0);
+      PC_next.write(4);
+      
+      // function pointers
+      r_type = {
+      	&cpu::SLL, &cpu::RESERVED, &cpu::SRL, &cpu::SRA,
+      	&cpu::SLLV, &cpu::RESERVED, &cpu::SRLV, &cpu::SRAV,
+      	&cpu::JR, &cpu::JALR, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::SYSCALL, &cpu::BREAK, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::MFHI, &cpu::MTHI, &cpu::MFLO, &cpu::MTLO,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::MULT, &cpu::MULTU, &cpu::DIV, &cpu::DIVU,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::ADD, &cpu::ADDU, &cpu::SUB, &cpu::SUBU,
+      	&cpu::AND, &cpu::OR, &cpu::XOR, &cpu::NOR,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::SLT, &cpu::SLTU,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED
+      };
+      
+      i_type = {
+      	&cpu::RESERVED, &cpu::BCOND, &cpu::J, &cpu::JAL,
+      	&cpu::BEQ, &cpu::BNE, &cpu::BLEZ, &cpu::BGTZ,
+      	&cpu::ADDI, &cpu::ADDIU, &cpu::SLTI, &cpu::SLTIU,
+      	&cpu::ANDI, &cpu::ORI, &cpu::XORI, &cpu::LUI,
+      	//&cpu::COPz, &cpu::COPz, &cpu::COPz, &cpu::COPz,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,	// TODO: remove when COPz is implemented
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
+      	&cpu::LB, &cpu::LH, &cpu::LWL, &cpu::LW,
+      	&cpu::LBU, &cpu::LHU, &cpu::LWR, &cpu::RESERVED,
+      	&cpu::SB, &cpu::SH, &cpu::SWL, &cpu::SW,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::SWR, &cpu::RESERVED,
+      	&cpu::LWCz, &cpu::LWCz, &cpu::LWCz, &cpu::LWCz,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
+      	&cpu::SWCz, &cpu::SWCz, &cpu::SWCz, &cpu::SWCz,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED 
+      };
+      
+      bcond_type = {
+      	&cpu::BLTZ, &cpu::BGEZ, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::BLTZAL, &cpu::BGEZAL, &cpu::RESERVED, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED      
+      };
 }
 
 void cpu::stepCPU()
 {
       // set exception PC
       setEPC();
-	// get instruction from mem & advance PC
-	instruction = memory->readWordLittle(PC.read());
-	PC.write(PC_next.read());
-	// decode instruction
-	word opcode = (instruction >> 26) & 0x3F;
-	try {
-		if (opcode == 0)
-		{
-			// execute r-type instruction
-			word function = instruction & 0x3F;
-			r_type[function](this);
-		}
-		else
-		{
-			// execute i/j-type instruction
-			i_type[opcode](this);
-		}
-	}
-	catch (psException &e)
+      // get instruction from mem & advance PC
+      instruction = memory->readWordLittle(PC.read());
+      PC.write(PC_next.read());
+      // decode instruction
+      word opcode = (instruction >> 26) & 0x3F;
+      try {
+      	if (opcode == 0)
+      	{
+      		// execute r-type instruction
+      		word function = instruction & 0x3F;
+      		r_type[function](this);
+      	}
+      	else
+      	{
+      		// execute i/j-type instruction
+      		i_type[opcode](this);
+      	}
+      }
+      catch (psException &e)
       {
-		// set BD
+      	// set BD
             SCC.data_reg[scc::CAUSE].writeBits(branch_delay, 31, 1);
-		// set CE
-		SCC.data_reg[scc::CAUSE].writeBits(coproc(), 28, 2);
-		// set IP
-		// set SW
-		// set EXECODE
-		SCC.data_reg[scc::CAUSE].writeBits(e.execode(), 2, 5);
-
+      	// set CE
+      	SCC.data_reg[scc::CAUSE].writeBits(coproc(), 28, 2);
+      	// set IP
+      	// set SW
+      	// set EXECODE
+      	SCC.data_reg[scc::CAUSE].writeBits(e.execode(), 2, 5);
+      
             // move prev to old
             word KUp = (SCC.data_reg[scc::SR].read() >> 3) & 1;
             word IEp = (SCC.data_reg[scc::SR].read() >> 2) & 1;
@@ -114,13 +112,13 @@ void cpu::stepCPU()
             // move current to prev
             word KUc = (SCC.data_reg[scc::SR].read() >> 1) & 1;
             word IEc = (SCC.data_reg[scc::SR].read() >> 0) & 1;
-            SCC.data_reg[scc::SR].writeBits(KUp, 3, 1);
-            SCC.data_reg[scc::SR].writeBits(IEp, 2, 1);
-
+            SCC.data_reg[scc::SR].writeBits(KUc, 3, 1);
+            SCC.data_reg[scc::SR].writeBits(IEc, 2, 1);
+      
             // set current
             SCC.data_reg[scc::SR].writeBits(0, 1, 1);
             SCC.data_reg[scc::SR].writeBits(0, 1, 0);
-
+      
             // jump to exception handler
             // if BEV == 1
             if ((SCC.data_reg[scc::SR].read() >> 22) & 1)
@@ -134,9 +132,9 @@ void cpu::stepCPU()
                   PC.write(0x00000080);
                   PC_next.write(0x00000084);
             }
-	}
-
-	incrementPCNext();
+      }
+      
+      incrementPCNext();
 }
 
 
@@ -363,6 +361,9 @@ void cpu::LBU()
 void cpu::LH()
 {
 	word address = source() + imm();
+      if (address % 2)
+            throw adelException();
+
 	word result;
 	if (checkEndianness())
 		result = memory->readHalfwordLittle(address) & 0xFFFF;
@@ -376,6 +377,9 @@ void cpu::LH()
 void cpu::LHU()
 {
 	word address = source() + imm();
+      if (address % 2)
+            throw adelException();
+
 	word result;
 	if (checkEndianness())
 		result = memory->readHalfwordLittle(address) & 0xFFFF;
@@ -387,6 +391,9 @@ void cpu::LHU()
 void cpu::LW()
 {
 	word address = source() + imm();
+      if (address % 4)
+            throw adelException();
+
 	word result;
 	if (checkEndianness())
 		result = memory->readWordLittle(address);
@@ -395,10 +402,26 @@ void cpu::LW()
 	target(result);
 }
 
-// following 2 instructions are in big-endian mode. I believe PSX is little endian by default
 void cpu::LWL()
 {
-	word address = source() + imm();
+      // unaligned address to load
+	unsigned address = source() + imm();
+      // number of byte within word to load
+      unsigned byte_number = address % 4;
+      // align the address
+      address -= byte_number;
+      
+      word load_data = memory->readWordLittle(address);
+      
+      // shift data to make it most significant
+      load_data <<= (3 - byte_number) * 8;
+
+      // mask target reg so it matches the empty bytes left
+      word masked_target = target() & (0xFFFFFFFF >> ((1 + byte_number) * 8));
+
+      target(load_data | masked_target);
+      
+      /*word address = source() + imm();
 	word byte_number = address % 4;
 	address -= byte_number;	// align address
 
@@ -410,12 +433,29 @@ void cpu::LWL()
 	// mask target() so it matches the empty bytes left by the load data
 	word result = target() & (0xFFFFFFFF >> ((4 - byte_number) * 8));
 
-	target(result | load_data);
+	target(result | load_data);*/
 }
 
 void cpu::LWR()
 {
-	word address = source() + imm();
+      // unaligned address to load
+      unsigned address = source() + imm();
+      // number of byte within word to load
+      unsigned byte_number = address % 4;
+      // align the address
+      address -= byte_number;
+
+      word load_data = memory->readWordLittle(address);
+
+      // shift data to make it least significant
+      load_data >>= byte_number * 8;
+
+      // mask target reg so it matches the empty bytes left
+      word masked_target = target() & (0xFFFFFFFF << ((4 - byte_number) * 8));
+
+      target(masked_target | load_data);
+
+	/*word address = source() + imm();
 	word byte_number = address % 4;
 	address -= byte_number;	// align address
 
@@ -427,7 +467,7 @@ void cpu::LWR()
 	// mask target() so it matches the empty bytes left by the load data
 	word result = target() & (0xFFFFFFFF << ((1 + byte_number) * 8));
 
-	target(result | load_data);
+	target(result | load_data);*/
 }
 
 
@@ -456,14 +496,34 @@ void cpu::SW()
 		memory->writeWordBig(address, target());
 }
 
-// next 2 instructions: little endian!
 void cpu::SWL()
 {
+      unsigned address = source() + imm();
+      unsigned byte_number = address % 4;
+      address -= byte_number;
 
+      // shift target data to make it least significant
+      word reg_data = target() >> ((3 - byte_number) * 8);
+
+      // mask data in word so it matches the empty bytes left
+      word load_data = memory->readWordLittle(address) & (0xFFFFFFFF << ((1 + byte_number) * 8));
+
+      memory->writeWordLittle(address, (load_data | reg_data));
 }
 
 void cpu::SWR()
 {
+      unsigned address = source() + imm();
+      unsigned byte_number = address % 4;
+      address -= byte_number;
+
+      // shift target data to make it most significant
+      word reg_data = target() << (byte_number * 8);
+
+      // mask data in word so it matches the empty bytes left
+      word load_data = memory->readWordLittle(address) & (0xFFFFFFFF >> ((4 - byte_number) * 8));
+
+      memory->writeWordLittle(address, (reg_data | load_data));
 }
 
 
@@ -649,7 +709,7 @@ void cpu::CFCz()
 	dest(data);
 }
 
-/*void cpu::COPz()
+void cpu::COPz()
 {
-	cop[coproc]->executeInstruction(instruction);
-}*/
+	cop[coproc()]->executeInstruction(instruction);
+}

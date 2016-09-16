@@ -83,8 +83,6 @@ byte RAMImpl::readByte(unsigned address)
 
 halfword RAMImpl::readHalfwordLittle(unsigned address)
 {
-	if (address % 2)
-		throw adelException();
 	byte bytes[2];
 	readMultiple(maskAddress(address), bytes, 2);
 	return bytes[0] | (bytes[1] << 8);
@@ -92,8 +90,6 @@ halfword RAMImpl::readHalfwordLittle(unsigned address)
 
 void RAMImpl::writeHalfwordLittle(unsigned address, halfword in)
 {
-	if (address % 2)
-		throw adesException();
 	byte bytes[2];
 	bytes[0] = in & 0xFF;
 	bytes[1] = (in >> 8) & 0xFF;
@@ -102,8 +98,6 @@ void RAMImpl::writeHalfwordLittle(unsigned address, halfword in)
 
 halfword RAMImpl::readHalfwordBig(unsigned address)
 {
-	if (address % 2)
-		throw adelException();
 	byte bytes[2];
 	readMultiple(maskAddress(address), bytes, 2);
 	return bytes[1] | (bytes[0] << 8);
@@ -111,8 +105,6 @@ halfword RAMImpl::readHalfwordBig(unsigned address)
 
 void RAMImpl::writeHalfwordBig(unsigned address, halfword in)
 {
-	if (address % 2)
-		throw adesException();
 	byte bytes[2];
 	bytes[1] = in & 0xFF;
 	bytes[0] = (in >> 8) & 0xFF;
@@ -121,8 +113,6 @@ void RAMImpl::writeHalfwordBig(unsigned address, halfword in)
 
 word RAMImpl::readWordLittle(unsigned address)
 {
-	if (address % 4)
-		throw adelException();
 	byte bytes[4];
 	readMultiple(maskAddress(address), bytes, 4);
 	return bytes[0] | (bytes[1] << 8) | (bytes[2] << 16) | (bytes[3] << 24);
@@ -130,8 +120,6 @@ word RAMImpl::readWordLittle(unsigned address)
 
 void RAMImpl::writeWordLittle(unsigned address, word in)
 {
-	if (address % 4)
-		throw adesException();
 	byte bytes[4];
 	bytes[0] = in & 0xFF;
 	bytes[1] = (in >> 8) & 0xFF;
@@ -142,8 +130,6 @@ void RAMImpl::writeWordLittle(unsigned address, word in)
 
 word RAMImpl::readWordBig(unsigned address)
 {
-	if (address % 4)
-		throw adelException();
 	byte bytes[4];
 	readMultiple(maskAddress(address), bytes, 4);
 	return bytes[3] | (bytes[2] << 8) | (bytes[1] << 16) | (bytes[0] << 24);
@@ -151,8 +137,6 @@ word RAMImpl::readWordBig(unsigned address)
 
 void RAMImpl::writeWordBig(unsigned address, word in)
 {
-	if (address % 4)
-		throw adesException();
 	byte bytes[4];
 	bytes[3] = in & 0xFF;
 	bytes[2] = (in >> 8) & 0xFF;
