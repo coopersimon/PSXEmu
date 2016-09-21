@@ -67,7 +67,7 @@ public:
       static fixedPoint subtract(fixedPoint a, fixedPoint b);
 
       // return as 32 bit value
-      word getAsWord(unsigned int_bits, unsigned frac_bits) const;
+      word getAsWord(unsigned int_bits, unsigned frac_bits);
 
       friend fixedPoint operator+(const fixedPoint& lhs, const fixedPoint& rhs);
       friend fixedPoint operator-(const fixedPoint& lhs, const fixedPoint& rhs);

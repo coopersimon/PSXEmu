@@ -10,23 +10,23 @@ testall : testcpu testgte
 
 testcpu : test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4
 
-testgte : test/gte/bin/DCPL_1
+testgte : test/gte/bin/DCPL_1 test/gte/bin/DCPL_2 test/gte/bin/DCPL_3 test/gte/bin/SQR_1
 
 # TEST CPU
 test/cpu/src/TestCPU.o : test/cpu/src/TestCPU.cpp test/cpu/src/TestCPU.h
 	$(CXX) $(CXXFLAGS) -c test/cpu/src/TestCPU.cpp -o $@
 
 test/cpu/bin/ADD_1 : test/cpu/src/ADD_1.cpp $(TESTCPULINK)
-	$(CXX) $(CXXFLAGS) $? -o $@
+	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_1.cpp $(TESTCPULINK) -o $@
 
 test/cpu/bin/ADD_2 : test/cpu/src/ADD_2.cpp $(TESTCPULINK)
-	$(CXX) $(CXXFLAGS) $? -o $@
+	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_2.cpp $(TESTCPULINK) -o $@
 
 test/cpu/bin/ADD_3 : test/cpu/src/ADD_3.cpp $(TESTCPULINK)
-	$(CXX) $(CXXFLAGS) $? -o $@
+	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_3.cpp $(TESTCPULINK) -o $@
 
 test/cpu/bin/ADD_4 : test/cpu/src/ADD_4.cpp $(TESTCPULINK)
-	$(CXX) $(CXXFLAGS) $? -o $@
+	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_4.cpp $(TESTCPULINK) -o $@
 
 
 # TEST GTE
@@ -34,7 +34,16 @@ test/gte/src/TestGTE.o : test/gte/src/TestGTE.cpp test/gte/src/TestGTE.h
 	$(CXX) $(CXXFLAGS) -c test/gte/src/TestGTE.cpp -o $@
 
 test/gte/bin/DCPL_1 : test/gte/src/DCPL_1.cpp $(TESTGTELINK)
-	$(CXX) $(CXXFLAGS) $? -o $@
+	$(CXX) $(CXXFLAGS) test/gte/src/DCPL_1.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/DCPL_2 : test/gte/src/DCPL_2.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/DCPL_2.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/DCPL_3 : test/gte/src/DCPL_3.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/DCPL_3.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/SQR_1 : test/gte/src/SQR_1.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/SQR_1.cpp $(TESTGTELINK) -o $@
 
 # OBJECT FILES
 target/Memory.o : src/Memory.cpp include/Memory.h include/PSException.h

@@ -63,11 +63,7 @@ bool fixedPoint::checkSaturation(s_word value, bool positive)
             return true;
       }
 
-      s_word negative_value;
-      if (positive)
-            negative_value = 0;
-      else
-            negative_value = -1 - value;
+      s_word negative_value = positive ? 0 : (-1 - value);
 
       if (number < negative_value)
       {
@@ -91,10 +87,7 @@ bool fixedPoint::checkBits(unsigned bits) const
 
 bool fixedPoint::checkSign() const
 {
-      if (number < 0)
-            return true;
-      else
-            return false;
+      return number < 0;
 }
 
 void fixedPoint::truncateFraction(unsigned new_frac_bits)
@@ -103,7 +96,7 @@ void fixedPoint::truncateFraction(unsigned new_frac_bits)
       frac_range = new_frac_bits;
 }
 
-word fixedPoint::getAsWord(unsigned int_bits, unsigned frac_bits) const
+word fixedPoint::getAsWord(unsigned int_bits, unsigned frac_bits)
 {
       // extract integer and fraction parts
       word integer = number >> frac_range;
@@ -112,8 +105,10 @@ word fixedPoint::getAsWord(unsigned int_bits, unsigned frac_bits) const
 
       word fraction = number >> (frac_range - frac_bits);
       fraction &= 0xFFFFFFFF >> (32 - frac_bits);
-      
-      return integer | fraction;
+
+      frac_range = frac_bits;
+
+      return number = (integer | fraction);
 }
 
 fixedPoint operator+(const fixedPoint& lhs, const fixedPoint& rhs)

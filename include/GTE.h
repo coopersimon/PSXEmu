@@ -43,8 +43,6 @@ public:
 
       inline void writeLowerHalfword(word in) { data &= 0xFFFF0000; data |= in & 0x0000FFFF; }
       inline void writeUpperHalfword(word in) { data &= 0x0000FFFF; data |= (in << 16) & 0xFFFF0000; }
-
-      //inline word read() const { return data; } // needed to remove template ambiguity
 };
 
 // GTEDataRegs are like GTERegs with FIFO chains
@@ -108,6 +106,7 @@ public:
       // TODO: constructor, register instructions
       gte();
 
+      // TODO: virtual stuff
 	// register transfers
 	void writeDataReg(word data_in, unsigned dest_reg);
 	word readDataReg(unsigned source_reg) const;
@@ -119,29 +118,35 @@ public:
 
 private:
       // inline functions
-      inline unsigned shiftFraction() const { return (instruction >> 19) & 1; }
+      inline bool shiftFraction() const { return (instruction >> 19) & 1; }
       inline unsigned MVMVAMultiplyMatrix() const { return (instruction >> 17) & 3; }
       inline unsigned MVMVAMultiplyVector() const { return (instruction >> 15) & 3; }
       inline unsigned MVMVATranslationVector() const { return (instruction >> 13) & 3; }
       inline bool lm() const { return (instruction >> 10) & 1; }
       inline unsigned GTECommand() const { return instruction & 0x3F; }
 
-      // Bit truncating, sets bits in FLAG register
-      fixedPoint A1(const fixedPoint &input);
-      fixedPoint A2(const fixedPoint &input);
-      fixedPoint A3(const fixedPoint &input);
-      fixedPoint B1(fixedPoint &input);
-      fixedPoint B2(fixedPoint &input);
-      void B3(fixedPoint &input);
-      void C1(fixedPoint &input);
-      void C2(fixedPoint &input);
-      void C3(fixedPoint &input);
-      void D(fixedPoint &input);
-      void E(fixedPoint &input);
-      void F(fixedPoint &input);
-      void G1(fixedPoint &input);
-      void G2(fixedPoint &input);
-      void Hx(fixedPoint &input);
+      // Set bits in FLAG register & return word
+
+      // for MAC return: check not larger than 43 bits & truncate
+      word A1(fixedPoint &input, unsigned integer, unsigned fraction);
+      word A2(fixedPoint &input, unsigned integer, unsigned fraction);
+      word A3(fixedPoint &input, unsigned integer, unsigned fraction);
+
+      // for IR return: saturate between -8000/0,7FFF
+      word B1(fixedPoint &input, unsigned integer, unsigned fraction);
+      word B2(fixedPoint &input, unsigned integer, unsigned fraction);
+      word B3(fixedPoint &input, unsigned integer, unsigned fraction);
+
+      // for RGB return: saturate between 0,FF
+      word C1(fixedPoint &input);
+      word C2(fixedPoint &input);
+      word C3(fixedPoint &input);
+      /*word D(fixedPoint &input);
+      word E(fixedPoint &input);
+      word F(const fixedPoint &input);
+      word G1(fixedPoint &input);
+      word G2(fixedPoint &input);
+      word Hx(fixedPoint &input);*/
 
 
       // TODO: instructions (easy!....)

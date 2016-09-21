@@ -59,11 +59,14 @@ void gte::executeInstruction(unsigned instruction_in)
 {
       instruction = instruction_in;
       // reset flag register
+      control_reg[FLAG].write(0);
       opcodes[GTECommand()](this);
 }
 
 
-fixedPoint gte::A1(const fixedPoint &input)
+// TODO: should the word be analysed inside the function?
+// something to think about in these functions
+word gte::A1(fixedPoint &input, unsigned integer, unsigned fraction)
 {
       bool set_bit = input.checkBits(43);
       if (set_bit && input.checkSign())
@@ -74,10 +77,10 @@ fixedPoint gte::A1(const fixedPoint &input)
       {
            control_reg[FLAG].writeBits(1, 30, 1);
       }
-      return input;
+      return input.getAsWord(integer, fraction);
 }
 
-fixedPoint gte::A2(const fixedPoint &input)
+word gte::A2(fixedPoint &input, unsigned integer, unsigned fraction)
 {
       bool set_bit = input.checkBits(43);
       if (set_bit && input.checkSign())
@@ -88,10 +91,10 @@ fixedPoint gte::A2(const fixedPoint &input)
       {
            control_reg[FLAG].writeBits(1, 29, 1);
       }
-      return input;
+      return input.getAsWord(integer, fraction);
 }
 
-fixedPoint gte::A3(const fixedPoint &input)
+word gte::A3(fixedPoint &input, unsigned integer, unsigned fraction)
 {
       bool set_bit = input.checkBits(43);
       if (set_bit && input.checkSign())
@@ -102,116 +105,127 @@ fixedPoint gte::A3(const fixedPoint &input)
       {
            control_reg[FLAG].writeBits(1, 28, 1);
       }
-      return input;
+      return input.getAsWord(integer, fraction);
 }
 
-fixedPoint gte::B1(fixedPoint &input)
+word gte::B1(fixedPoint &input, unsigned integer, unsigned fraction)
 {
       if (input.checkSaturation(0x7FFF, lm()))
       {
             control_reg[FLAG].writeBits(1, 24, 1);
       }
-      return input;
+      return input.getAsWord(integer, fraction); // TODO: are int/frac necessary here?
 }
 
-fixedPoint gte::B2(fixedPoint &input)
+word gte::B2(fixedPoint &input, unsigned integer, unsigned fraction)
 {
       if (input.checkSaturation(0x7FFF, lm()))
       {
             control_reg[FLAG].writeBits(1, 23, 1);
       }
-      return input;
+      return input.getAsWord(integer, fraction); // TODO: are int/frac necessary here?
 }
 
-void gte::B3(fixedPoint &input)
+word gte::B3(fixedPoint &input, unsigned integer, unsigned fraction)
 {
       if (input.checkSaturation(0x7FFF, lm()))
       {
             control_reg[FLAG].writeBits(1, 22, 1);
-            return;
       }
+      return input.getAsWord(integer, fraction); // TODO: are int/frac necessary here?
 }
 
-void gte::C1(fixedPoint &input)
+word gte::C1(fixedPoint &input)
 {
+      input.truncateFraction(0);
       if (input.checkSaturation(0xFF, true))
       {
             control_reg[FLAG].writeBits(1, 21, 1);
       }
+      return input.getAsWord(8, 0);
 }
 
-void gte::C2(fixedPoint &input)
+word gte::C2(fixedPoint &input)
 {
+      input.truncateFraction(0);
       if (input.checkSaturation(0xFF, true))
       {
             control_reg[FLAG].writeBits(1, 20, 1);
       }
+      return input.getAsWord(8, 0);
 }
 
-void gte::C3(fixedPoint &input)
+word gte::C3(fixedPoint &input)
 {
+      input.truncateFraction(0);
       if (input.checkSaturation(0xFF, true))
       {
             control_reg[FLAG].writeBits(1, 19, 1);
       }
+      return input.getAsWord(8, 0);
 }
 
-void gte::D(fixedPoint &input)
+/*word gte::D(fixedPoint &input)
 {
       if (input.checkSaturation(0xFFFF, true))
       {
             control_reg[FLAG].writeBits(1, 18, 1);
       }
+      return input;
 }
 
-void gte::E(fixedPoint &input)
+fixedPoint gte::E(fixedPoint &input)
 {
+      return input;
 }
 
-void gte::F(fixedPoint &input)
+fixedPoint gte::F(const fixedPoint &input)
 {
       bool set_bit = input.checkBits(31);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 15, 1);
-           return;
       }
-      if (set_bit && !input.checkSign())
+      else if (set_bit && !input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 16, 1);
-           return;
       }
+      return input;
 }
 
-void gte::G1(fixedPoint &input)
+fixedPoint gte::G1(fixedPoint &input)
 {
       if (input.checkSaturation(0x3FF, false))
       {
             control_reg[FLAG].writeBits(1, 14, 1);
       }
+      return input;
 }
 
-void gte::G2(fixedPoint &input)
+fixedPoint gte::G2(fixedPoint &input)
 {
       if (input.checkSaturation(0x3FF, false))
       {
             control_reg[FLAG].writeBits(1, 13, 1);
       }
+      return input;
 }
 
-void gte::Hx(fixedPoint &input)
+fixedPoint gte::Hx(fixedPoint &input)
 {
       if (input.checkSaturation(0x1000, true))
       {
             control_reg[FLAG].writeBits(1, 12, 1);
       }
-}
+      return input;
+}*/
 
 
 /***** INSTRUCTIONS *****/
 
 void gte::RESERVED()
 {
+      return;
 }
 
 
@@ -234,53 +248,45 @@ void gte::DCPL()
       fixedPoint ir(data_reg[IR1].readLowerHalfword(), 12);
       fixedPoint fc(control_reg[RFC].read(), 4);
       fixedPoint ir0(data_reg[IR0].readLowerHalfword(), 12);
-      
+
       fixedPoint rgbir = rgb * ir; // rgbir: 11.12
       rgbir.truncateFraction(4); // this shouldn't really be needed. subtraction might take care of it
       fixedPoint intermediate = fc - rgbir; // intermediate: 27.4
-      B1(intermediate);
+      B1(intermediate, 28, 4); // ok this got uglier... TODO: maybe a different function is needed here?
       fixedPoint mac1 = rgbir + (ir0 * intermediate);
-      data_reg[MAC1].write(mac1.getAsWord(28, 4)); // maybe get as word should also truncate?
+      data_reg[MAC1].write(A1(mac1, 28, 4));
 
       rgb = fixedPoint(data_reg[RGB].readByte1(), 0, false);
       ir = fixedPoint(data_reg[IR2].readLowerHalfword(), 12);
       fc = fixedPoint(control_reg[GFC].read(), 4);
-      
+
       rgbir = rgb * ir;
       rgbir.truncateFraction(4);
       intermediate = fc - rgbir;
-      B2(intermediate);
+      B2(intermediate, 28, 4);
       fixedPoint mac2 = rgbir + (ir0 * intermediate);
-      data_reg[MAC2].write(mac2.getAsWord(28, 4));
+      data_reg[MAC2].write(A2(mac2, 28, 4));
 
       rgb = fixedPoint(data_reg[RGB].readByte2(), 0, false);
       ir = fixedPoint(data_reg[IR3].readLowerHalfword(), 12);
       fc = fixedPoint(control_reg[BFC].read(), 4);
-      
+
       rgbir = rgb * ir;
       rgbir.truncateFraction(4);
       intermediate = fc - rgbir;
-      B3(intermediate);
+      B3(intermediate, 28, 4);
       fixedPoint mac3 = rgbir + (ir0 * intermediate);
-      data_reg[MAC3].write(mac3.getAsWord(28, 4));
+      // TODO: this line down to be rewritten with new fns
+      data_reg[MAC3].write(A3(mac3, 28, 4));
 
-      mac1.truncateFraction(4);
-      B1(mac1);
-      data_reg[IR1].writeLowerHalfword(mac1.getAsWord(12, 4));
-      mac2.truncateFraction(4);
-      B2(mac2);
-      data_reg[IR2].writeLowerHalfword(mac2.getAsWord(12, 4));
-      mac3.truncateFraction(4);
-      B3(mac3);
-      data_reg[IR3].writeLowerHalfword(mac3.getAsWord(12, 4));
+      data_reg[IR1].writeLowerHalfword(B1(mac1, 12, 4));
+      data_reg[IR2].writeLowerHalfword(B2(mac2, 12, 4));
+      data_reg[IR3].writeLowerHalfword(B3(mac3, 12, 4));
 
       word crgb = data_reg[RGB].readByte3() << 24;
-      C1(mac1);
-      crgb |= mac1.getAsWord(8, 0);
-      C2(mac2);
-      crgb |= mac2.getAsWord(8, 0) << 8;
-      C3(mac3);
-      crgb |= mac3.getAsWord(8, 0) << 16;
+      crgb |= C1(mac1);
+      crgb |= C2(mac2) << 8;
+      crgb |= C3(mac3) << 16;
 
       data_reg[RGB2].write(crgb);
 }
@@ -299,6 +305,41 @@ void gte::INTPL()
 
 void gte::SQR()
 {
+      if (shiftFraction())
+      {
+            fixedPoint ir1(data_reg[IR1].readLowerHalfword(), 12);
+            fixedPoint mac1 = ir1 * ir1;
+            data_reg[MAC1].write(A1(mac1, 20, 12));
+            data_reg[IR1].writeLowerHalfword(B1(mac1, 4, 12));
+            
+            fixedPoint ir2(data_reg[IR2].readLowerHalfword(), 12);
+            fixedPoint mac2 = ir2 * ir2;
+            data_reg[MAC2].write(A2(mac2, 20, 12));
+            data_reg[IR2].writeLowerHalfword(B2(mac2, 4, 12));
+            
+            fixedPoint ir3(data_reg[IR3].readLowerHalfword(), 12);
+            fixedPoint mac3 = ir3 * ir3;
+            data_reg[MAC3].write(A3(mac3, 20, 12));
+            data_reg[IR3].writeLowerHalfword(B3(mac3, 4, 12));
+      }
+
+      else
+      {
+            fixedPoint ir1(data_reg[IR1].readLowerHalfword(), 0);
+            fixedPoint mac1 = ir1 * ir1;
+            data_reg[MAC1].write(A1(mac1, 32, 0));
+            data_reg[IR1].writeLowerHalfword(B1(mac1, 16, 0));
+            
+            fixedPoint ir2(data_reg[IR2].readLowerHalfword(), 0);
+            fixedPoint mac2 = ir2 * ir2;
+            data_reg[MAC2].write(A2(mac2, 32, 0));
+            data_reg[IR2].writeLowerHalfword(B2(mac2, 16, 0));
+            
+            fixedPoint ir3(data_reg[IR3].readLowerHalfword(), 0);
+            fixedPoint mac3 = ir3 * ir3;
+            data_reg[MAC3].write(A3(mac3, 32, 0));
+            data_reg[IR3].writeLowerHalfword(B3(mac3, 16, 0));
+      }
 }
 
 void gte::NCS()
