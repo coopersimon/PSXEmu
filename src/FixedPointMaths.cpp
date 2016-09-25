@@ -76,13 +76,13 @@ bool fixedPoint::checkSaturation(s_word value, bool positive)
 
 bool fixedPoint::checkBits(unsigned bits) const
 {
-      s_doubleword mask = (1 << bits) - 1;
-      s_doubleword masked_number = number & mask;
+      doubleword masked_number = (number < 0) ?
+            doubleword(-number) : doubleword(number);
+            
+      doubleword max_value = (number < 0) ?
+            (1 << bits) : (1 << bits) - 1;
 
-      if (masked_number)
-            return true;
-      else
-            return false;
+      return masked_number > max_value;
 }
 
 bool fixedPoint::checkSign() const

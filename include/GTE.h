@@ -128,23 +128,24 @@ private:
       // Set bits in FLAG register & return word
 
       // for MAC return: check not larger than 43 bits & truncate
-      word A1(fixedPoint &input, unsigned integer, unsigned fraction);
-      word A2(fixedPoint &input, unsigned integer, unsigned fraction);
-      word A3(fixedPoint &input, unsigned integer, unsigned fraction);
+      word A1(fixedPoint &input, unsigned fraction);
+      word A2(fixedPoint &input, unsigned fraction);
+      word A3(fixedPoint &input, unsigned fraction);
 
       // for IR return: saturate between -8000/0,7FFF
-      word B1(fixedPoint &input, unsigned integer, unsigned fraction);
-      word B2(fixedPoint &input, unsigned integer, unsigned fraction);
-      word B3(fixedPoint &input, unsigned integer, unsigned fraction);
+      word B1(fixedPoint &input, unsigned fraction);
+      word B2(fixedPoint &input, unsigned fraction);
+      word B3(fixedPoint &input, unsigned fraction);
 
       // for RGB return: saturate between 0,FF
       word C1(fixedPoint &input);
       word C2(fixedPoint &input);
       word C3(fixedPoint &input);
+
       /*word D(fixedPoint &input);
-      word E(fixedPoint &input);
-      word F(const fixedPoint &input);
-      word G1(fixedPoint &input);
+      word E(fixedPoint &input);*/
+      word F(fixedPoint &input);
+      /*word G1(fixedPoint &input);
       word G2(fixedPoint &input);
       word Hx(fixedPoint &input);*/
 
@@ -153,28 +154,28 @@ private:
 	// instructions
       void RESERVED();
 
-      void RTPS();
-      void RTPT();
-      void MVMVA();
+      void RTPS();      //TODO
+      void RTPT();      //TODO
+      void MVMVA();     //TODO
       void DCPL();
-      void DPCS();
-      void DPCT();
+      void DPCS();      //TODO
+      void DPCT();      //TODO
       void INTPL();
       void SQR();
-      void NCS();
-      void NCT();
-      void NCDS();
-      void NCDT();
-      void NCCS();
-      void NCCT();
-      void CDP();
+      void NCS();       //TODO
+      void NCT();       //TODO
+      void NCDS();      //TODO
+      void NCDT();      //TODO
+      void NCCS();      //TODO
+      void NCCT();      //TODO
+      void CDP();       //TODO
       void CC();
       void NCLIP();
-      void AVSZ3();
-      void AVSZ4();
-      void OP();
-      void GPF();
-      void GPL();
+      void AVSZ3();     //TODO
+      void AVSZ4();     //TODO
+      void OP();        //TODO
+      void GPF();       //TODO
+      void GPL();       //TODO
 
 public:
 

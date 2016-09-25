@@ -10,7 +10,7 @@ testall : testcpu testgte
 
 testcpu : test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4
 
-testgte : test/gte/bin/DCPL_1 test/gte/bin/DCPL_2 test/gte/bin/DCPL_3 test/gte/bin/SQR_1
+testgte : test/gte/bin/DCPL_1 test/gte/bin/DCPL_2 test/gte/bin/DCPL_3 test/gte/bin/SQR_1 test/gte/bin/INTPL_1 test/gte/bin/NCLIP_1
 
 # TEST CPU
 test/cpu/src/TestCPU.o : test/cpu/src/TestCPU.cpp test/cpu/src/TestCPU.h
@@ -44,6 +44,13 @@ test/gte/bin/DCPL_3 : test/gte/src/DCPL_3.cpp $(TESTGTELINK)
 
 test/gte/bin/SQR_1 : test/gte/src/SQR_1.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/SQR_1.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/INTPL_1 : test/gte/src/INTPL_1.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/INTPL_1.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/NCLIP_1 : test/gte/src/NCLIP_1.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/NCLIP_1.cpp $(TESTGTELINK) -o $@
+
 
 # OBJECT FILES
 target/Memory.o : src/Memory.cpp include/Memory.h include/PSException.h
