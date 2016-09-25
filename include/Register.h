@@ -4,39 +4,40 @@
 /*
  *	Register.h
  *
- *	Classes used to represent 32 and 16 bit registers
+ *	Classes used to represent 32 bit registers
  *
  */
 
 #include <Memory.h>
 
-template <typename T>
 class regCommon
 {
 protected:
 	// data of register
-	T data;
+	word data;
 
 public:
       regCommon() : data(0) {}
 
-	regCommon(T set_data) : data(set_data) {}
+	regCommon(word set_data) : data(set_data) {}
 
-	inline T read() const
+	inline word read() const
 	{
 		return data;
 	}
 
-	inline void write(T in)
+	inline void write(word in)
 	{
 		data = in;
 	}
 
 };
 
-class MIPSReg : public regCommon<word>
+// used in cpu, like regCommon but with a mask
+class MIPSReg : public regCommon
 {
 protected:
+      // mask used for writing data
 	word mask;
 
 public:
@@ -53,8 +54,5 @@ public:
 		data = in & mask;
 	}	
 };
-
-typedef regCommon<word> reg32;
-typedef regCommon<halfword> reg16;
 
 #endif

@@ -21,7 +21,7 @@ namespace test
       class CPUtestbench;
 };
 
-// TODO: namespace!
+// TODO: namespace?
 
 // class used to represent the R3051 CPU
 class cpu
@@ -39,18 +39,15 @@ class cpu
 	/*** Coprocessors ***/
 	scc SCC;
 	gte GTE;
-	// generic pointers for load/store
+	// generic pointers for virtual functions
 	coprocessor * cop[4];
 
 	/*** Memory bus ***/
 	memoryInterface *memory;
 
-	// cache: 4kB instruction cache, 1kB data cache
-	//		I have no idea how much of this we need to emulate
-
 	/*** Status ***/
 	bool little_endian;	// true if cpu is in little endian mode
-	unsigned instruction;
+	unsigned instruction;   // contains the whole instruction
 
       /*** Exception related variables ***/
       bool branch_delay;      // true if instruction currently executing is in the branch delay slot

@@ -23,21 +23,21 @@ class scc : public coprocessor
 	// cpu needs to access registers
 	friend cpu;
 
-	// registers
+	/*** REGISTERS ***/
 	CoprocessorReg data_reg[16];
 
-	// function pointer
+	/*** FUNCTION POINTERS ***/
 	std::vector<std::function<void(scc*)>> instruction;
 	
 public:
 	scc();
 
 	// register transfers
-	void writeDataReg(word data_in, unsigned dest_reg);
-	word readDataReg(unsigned source_reg) const;
+	void writeDataReg(word data_in, unsigned dest_reg) override;
+	word readDataReg(unsigned source_reg) const override;
 
 private:
-	// instructions
+	/*** INSTRUCTIONS ***/
 	void TLBR();
 	void TLBWI();
 	void TLBWR();

@@ -14,13 +14,10 @@
 // operations on unknown data (which could be up to 64 bits) could result in errors
 // to avoid this issue convert back before doing more fixed point operations
 
-
+// represents a fixed point value
 class fixedPoint
 {
-      // mask used for some operations
-      //static const word mask = 0xFFFFFFFF;
-
-      // break down of fixed point data
+      /*** DATA ***/
       s_doubleword number;
       unsigned frac_range;
       
@@ -29,11 +26,13 @@ class fixedPoint
             number(value), frac_range(frac_bits) {}
 
 public:
-      // public constructors
+      /*** CONSTRUCTORS ***/
       fixedPoint(word value, unsigned frac_bits) :
             number(s_word(value)), frac_range(frac_bits) {}
+
       fixedPoint(halfword value, unsigned frac_bits) :
             number(s_halfword(value)), frac_range(frac_bits) {}
+
       // byte can be constructed signed or unsigned
       fixedPoint(byte value, unsigned frac_bits, bool signed_byte = true)
       {
@@ -44,6 +43,8 @@ public:
                   number = value;
       }
       
+      /*** STATUS & RETURN ***/
+
       // check: value > number > -value-1
       // only check negative side if "is_signed" = true
       // if it is, saturate the number and return true
@@ -60,15 +61,16 @@ public:
       // this might not be needed: add/sub may just need to change how they shift bits
       void truncateFraction(unsigned new_frac_bits);
 
-      // operations
+      // return as 32 bit value
+      word getAsWord(unsigned int_bits, unsigned frac_bits);
+
+      /*** OPERATIONS ***/
       static fixedPoint multiply(fixedPoint a, fixedPoint b);
       //static fixedPoint divide(fixedPoint a, fixedPoint b);
       static fixedPoint add(fixedPoint a, fixedPoint b);
       static fixedPoint subtract(fixedPoint a, fixedPoint b);
 
-      // return as 32 bit value
-      word getAsWord(unsigned int_bits, unsigned frac_bits);
-
+      /*** OPERATORS ***/
       friend fixedPoint operator+(const fixedPoint& lhs, const fixedPoint& rhs);
       friend fixedPoint operator-(const fixedPoint& lhs, const fixedPoint& rhs);
       friend fixedPoint operator*(const fixedPoint& lhs, const fixedPoint& rhs);

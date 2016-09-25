@@ -20,7 +20,7 @@ namespace test
       class GTEtestbench;
 };
 
-// TODO: some way of stalling the cpu if it tries to execute gte command before the gte is finished with the last one
+/***** REGISTERS *****/
 
 // GTERegs are like CoprocessorRegs with some extra access functions
 class GTEReg : public CoprocessorReg
@@ -81,43 +81,36 @@ public:
       } 
 };
 
-// note: multiplying fixed point numbers:
-// multiply together, shift value to the right by 12
-
 
 // gte: cop2, deals with vector and matrix transformations
 class gte : public coprocessor
 {
-      // registers. NOT general purpose
+      /*** REGISTERS ***/
       GTEReg control_reg[32];
 	GTEDataReg data_reg[32];
 
-      // function pointers
+      /*** FUNCTION POINTERS ***/
       std::vector<std::function<void(gte*)>> opcodes;
 
-      // instruction
+      /*** INSTRUCTION ***/
       unsigned instruction;
-
-      // count cycles down before next gte instruction can run
-      //unsigned cycle_countdown;
-      // TODO: along with something like void countCycle() {cycle_countdown--;}
 
 public:
       // TODO: constructor, register instructions
       gte();
 
-      // TODO: virtual stuff
 	// register transfers
-	void writeDataReg(word data_in, unsigned dest_reg);
-	word readDataReg(unsigned source_reg) const;
-	void writeControlReg(word data_in, unsigned dest_reg);
-	word readControlReg(unsigned source_reg) const;
+	void writeDataReg(word data_in, unsigned dest_reg) override;
+	word readDataReg(unsigned source_reg) const override;
+	void writeControlReg(word data_in, unsigned dest_reg) override;
+	word readControlReg(unsigned source_reg) const override;
 
       // decode and run instruction
-      void executeInstruction(unsigned instruction);
+      void executeInstruction(unsigned instruction) override;
 
 private:
-      // inline functions
+      /*** INLINE FUNCTIONS ***/
+      // decoding instruction
       inline bool shiftFraction() const { return (instruction >> 19) & 1; }
       inline unsigned MVMVAMultiplyMatrix() const { return (instruction >> 17) & 3; }
       inline unsigned MVMVAMultiplyVector() const { return (instruction >> 15) & 3; }
@@ -125,6 +118,7 @@ private:
       inline bool lm() const { return (instruction >> 10) & 1; }
       inline unsigned GTECommand() const { return instruction & 0x3F; }
 
+      /*** FLAG BITS ***/
       // Set bits in FLAG register & return word
 
       // for MAC return: check not larger than 43 bits & truncate
@@ -151,7 +145,7 @@ private:
 
 
       // TODO: instructions (easy!....)
-	// instructions
+	/*** INSTRUCTIONS ***/
       void RESERVED();
 
       void RTPS();      //TODO
@@ -179,7 +173,7 @@ private:
 
 public:
 
-      // control regs
+      /*** CONTROL REGS ***/
       enum
       {
             R11R12 = 0, R13R21, R22R23, R31R32, R33,
@@ -195,7 +189,7 @@ public:
             FLAG
       };
 
-      // data regs
+      /*** DATA REGS ***/
       enum
       {
             VXY0 = 0, VZ0,
@@ -213,7 +207,7 @@ public:
             LZCS, LZCR
       };
 
-      // testing
+      /*** TESTING ***/
       friend test::GTEtestbench;
 };
 
