@@ -136,15 +136,23 @@ private:
       word C2(fixedPoint &input);
       word C3(fixedPoint &input);
 
-      /*word D(fixedPoint &input);
-      word E(fixedPoint &input);*/
+      // SZ3 or OTZ return: saturate between 0,FFFF
+      word D(fixedPoint &input);
+
+      // divide overflow
+      //word E(fixedPoint &input);
+      
+      // for MAC0 return: check not larger than 31 bits & truncate
       word F(fixedPoint &input);
-      /*word G1(fixedPoint &input);
+      
+      // for SXY return: saturate between -400,3FF
+      word G1(fixedPoint &input);
       word G2(fixedPoint &input);
-      word Hx(fixedPoint &input);*/
+
+      // for IR0 return: saturate between 0,1000
+      //word Hx(fixedPoint &input);
 
 
-      // TODO: instructions (easy!....)
 	/*** INSTRUCTIONS ***/
       void RESERVED();
 

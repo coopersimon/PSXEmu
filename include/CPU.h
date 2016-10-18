@@ -56,7 +56,7 @@ class cpu
 	std::vector<std::function<void(cpu*)>> r_type;
 	std::vector<std::function<void(cpu*)>> i_type;
 	std::vector<std::function<void(cpu*)>> bcond_type;
-
+      std::vector<std::function<void(cpu*)>> copz_instr;
 
 public:
 	// construct processor
@@ -107,6 +107,7 @@ private:
 	inline void dest(word in) { gp_reg[(instruction >> 11) & 0x1F].write(in); }
 
 	// instruction decoding
+      inline unsigned source_val() const { return (instruction >> 21) & 0x1F; }
 	inline unsigned target_val() const { return (instruction >> 16) & 0x1F; }
       inline unsigned dest_val() const { return (instruction >> 11) & 0x1F; }
 	inline unsigned shamt() const { return (instruction >> 6) & 0x1F; }

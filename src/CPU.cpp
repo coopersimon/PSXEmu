@@ -45,8 +45,7 @@ cpu::cpu(memoryInterface *memIn)
       	&cpu::BEQ, &cpu::BNE, &cpu::BLEZ, &cpu::BGTZ,
       	&cpu::ADDI, &cpu::ADDIU, &cpu::SLTI, &cpu::SLTIU,
       	&cpu::ANDI, &cpu::ORI, &cpu::XORI, &cpu::LUI,
-      	//&cpu::COPz, &cpu::COPz, &cpu::COPz, &cpu::COPz,
-      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,	// TODO: remove when COPz is implemented
+      	&cpu::COPz, &cpu::COPz, &cpu::COPz, &cpu::COPz,
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
@@ -57,7 +56,7 @@ cpu::cpu(memoryInterface *memIn)
       	&cpu::LWCz, &cpu::LWCz, &cpu::LWCz, &cpu::LWCz,
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, 
       	&cpu::SWCz, &cpu::SWCz, &cpu::SWCz, &cpu::SWCz,
-      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED 
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED
       };
       
       bcond_type = {
@@ -66,7 +65,14 @@ cpu::cpu(memoryInterface *memIn)
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED,
       	&cpu::BLTZAL, &cpu::BGEZAL, &cpu::RESERVED, &cpu::RESERVED,
-      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED      
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED
+      };
+
+      copz_instr = {
+            &cpu::MFCz, &cpu::RESERVED, &cpu::CFCz, &cpu::RESERVED,
+            &cpu::MTCz, &cpu::RESERVED, &cpu::CTCz, &cpu::RESERVED,
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, // bc0t/bc0f instructions may need to be added here.
+      	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED
       };
 }
 
@@ -150,7 +156,8 @@ void cpu::ADD()
 {
 	word result = source() + target();
 	if (0x80000000 & (source() ^ result)) // if output sign and input sign are different
-	{	if (0x80000000 & source() & target()) // if the operand signs are the same
+	{	
+            if (0x80000000 & source() & target()) // if the operand signs are the same
 			throw ovfException();
 	}
 	dest(result);
@@ -711,5 +718,13 @@ void cpu::CFCz()
 
 void cpu::COPz()
 {
-	cop[coproc()]->executeInstruction(instruction);
+      // check for MT/MF/CT/CF
+      if (source_val() < 16)
+      {
+            copz_instr[source_val()](this);
+      }
+      else
+      {
+	      cop[coproc()]->executeInstruction(instruction);
+      }
 }

@@ -1,4 +1,5 @@
 #include <FixedPointMaths.h>
+#include <iostream>
 
 fixedPoint fixedPoint::multiply(fixedPoint a, fixedPoint b)
 {
@@ -55,17 +56,18 @@ fixedPoint fixedPoint::subtract(fixedPoint a, fixedPoint b)
       return fixedPoint(new_number, new_frac_range);
 }
 
-bool fixedPoint::checkSaturation(s_word value, bool positive)
+bool fixedPoint::checkSaturation(s_word value, bool not_signed)
 {
-      if (number > value)
+      s_word number_32 = s_word(number);
+      if (number_32 > value)
       {
             number = value;
             return true;
       }
 
-      s_word negative_value = positive ? 0 : (-1 - value);
+      s_word negative_value = not_signed ? 0 : (-1 - value);
 
-      if (number < negative_value)
+      if (number_32 < negative_value)
       {
             number = negative_value;
             return true;
@@ -78,9 +80,9 @@ bool fixedPoint::checkBits(unsigned bits) const
 {
       doubleword masked_number = (number < 0) ?
             doubleword(-number) : doubleword(number);
-            
+
       doubleword max_value = (number < 0) ?
-            (1 << bits) : (1 << bits) - 1;
+            (1ll << bits) : (1ll << bits) - 1;
 
       return masked_number > max_value;
 }

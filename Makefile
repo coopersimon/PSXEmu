@@ -8,9 +8,17 @@ TESTGTELINK=test/gte/src/TestGTE.o target/Coprocessor.o target/FixedPointMaths.o
 # MAIN BUILDS
 testall : testcpu testgte
 
-testcpu : test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4
+testcpu : \
+test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4 \
+test/cpu/bin/SUB_1 
 
-testgte : test/gte/bin/DCPL_1 test/gte/bin/DCPL_2 test/gte/bin/DCPL_3 test/gte/bin/SQR_1 test/gte/bin/INTPL_1 test/gte/bin/NCLIP_1
+testgte : \
+test/gte/bin/DCPL_1 test/gte/bin/DCPL_2 test/gte/bin/DCPL_3 \
+test/gte/bin/SQR_1 \
+test/gte/bin/INTPL_1 \
+test/gte/bin/NCLIP_1 \
+test/gte/bin/MVMVA_1 test/gte/bin/MVMVA_2 test/gte/bin/MVMVA_3
+
 
 # TEST CPU
 test/cpu/src/TestCPU.o : test/cpu/src/TestCPU.cpp test/cpu/src/TestCPU.h
@@ -27,6 +35,9 @@ test/cpu/bin/ADD_3 : test/cpu/src/ADD_3.cpp $(TESTCPULINK)
 
 test/cpu/bin/ADD_4 : test/cpu/src/ADD_4.cpp $(TESTCPULINK)
 	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_4.cpp $(TESTCPULINK) -o $@
+
+test/cpu/bin/SUB_1 : test/cpu/src/SUB_1.cpp $(TESTCPULINK)
+	$(CXX) $(CXXFLAGS) test/cpu/src/SUB_1.cpp $(TESTCPULINK) -o $@
 
 
 # TEST GTE
@@ -50,6 +61,15 @@ test/gte/bin/INTPL_1 : test/gte/src/INTPL_1.cpp $(TESTGTELINK)
 
 test/gte/bin/NCLIP_1 : test/gte/src/NCLIP_1.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/NCLIP_1.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/MVMVA_1 : test/gte/src/MVMVA_1.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/MVMVA_1.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/MVMVA_2 : test/gte/src/MVMVA_2.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/MVMVA_2.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/MVMVA_3 : test/gte/src/MVMVA_3.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/MVMVA_3.cpp $(TESTGTELINK) -o $@
 
 
 # OBJECT FILES
@@ -87,9 +107,15 @@ include/CPU.h : include/SCC.h include/GTE.h
 
 
 # CLEAN
-clean :
+clean : cleantarget cleancputest cleangtetest
+
+cleantarget :
 	rm target/*
+
+cleancputest :
 	rm test/cpu/src/*.o
 	rm test/cpu/bin/*
+
+cleangtetest :
 	rm test/gte/src/*.o
 	rm test/gte/bin/*

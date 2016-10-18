@@ -70,7 +70,6 @@ void gte::executeInstruction(unsigned instruction_in)
 
 // TODO: should the word be analysed inside the function?
 // something to think about in these functions
-// TODO: probably dont need int AND frac
 word gte::A1(fixedPoint &input, unsigned fraction)
 {
       bool set_bit = input.checkBits(43);
@@ -113,6 +112,7 @@ word gte::A3(fixedPoint &input, unsigned fraction)
       return input.getAsWord(32-fraction, fraction);
 }
 
+// these should take in a word. needs lots of work.
 word gte::B1(fixedPoint &input, unsigned fraction)
 {
       if (input.checkSaturation(0x7FFF, lm()))
@@ -170,16 +170,16 @@ word gte::C3(fixedPoint &input)
       return input.getAsWord(8, 0);
 }
 
-/*word gte::D(fixedPoint &input)
+word gte::D(fixedPoint &input)
 {
       if (input.checkSaturation(0xFFFF, true))
       {
             control_reg[FLAG].writeBits(1, 18, 1);
       }
-      return input;
+      return input.getAsWord(16, 0);
 }
 
-fixedPoint gte::E(fixedPoint &input)
+/*fixedPoint gte::E(fixedPoint &input)
 {
       return input;
 }*/
@@ -198,25 +198,25 @@ word gte::F(fixedPoint &input)
       return input.getAsWord(32, 0);
 }
 
-/*fixedPoint gte::G1(fixedPoint &input)
+word gte::G1(fixedPoint &input)
 {
       if (input.checkSaturation(0x3FF, false))
       {
             control_reg[FLAG].writeBits(1, 14, 1);
       }
-      return input;
+      return input.getAsWord(16, 0);
 }
 
-fixedPoint gte::G2(fixedPoint &input)
+word gte::G2(fixedPoint &input)
 {
       if (input.checkSaturation(0x3FF, false))
       {
             control_reg[FLAG].writeBits(1, 13, 1);
       }
-      return input;
+      return input.getAsWord(16, 0);
 }
 
-fixedPoint gte::Hx(fixedPoint &input)
+/*fixedPoint gte::Hx(fixedPoint &input)
 {
       if (input.checkSaturation(0x1000, true))
       {
@@ -236,15 +236,126 @@ void gte::RESERVED()
 
 void gte::RTPS()
 {
-      
+     // lm = 0 
 }
 
 void gte::RTPT()
 {
+     // lm = 0 
 }
 
 void gte::MVMVA()
 {
+      /***** INPUTS *****/
+      fixedPoint mx11, mx12, mx13;
+      fixedPoint mx21, mx22, mx23;
+      fixedPoint mx31, mx32, mx33;
+
+      fixedPoint vx;
+      fixedPoint vy;
+      fixedPoint vz;
+
+      fixedPoint cvx;
+      fixedPoint cvy;
+      fixedPoint cvz;
+
+      /***** INPUT CONSTRUCTION *****/
+      if (MVMVAMultiplyMatrix() == 0)
+      {
+            // rotation matrix
+            mx11 = fixedPoint(control_reg[R11R12].readLowerHalfword(), 12);
+            mx12 = fixedPoint(control_reg[R11R12].readUpperHalfword(), 12);
+            mx13 = fixedPoint(control_reg[R13R21].readLowerHalfword(), 12);
+            mx21 = fixedPoint(control_reg[R13R21].readUpperHalfword(), 12);
+            mx22 = fixedPoint(control_reg[R22R23].readLowerHalfword(), 12);
+            mx23 = fixedPoint(control_reg[R22R23].readUpperHalfword(), 12);
+            mx31 = fixedPoint(control_reg[R31R32].readLowerHalfword(), 12);
+            mx32 = fixedPoint(control_reg[R31R32].readUpperHalfword(), 12);
+            mx33 = fixedPoint(control_reg[R33].readLowerHalfword(), 12);
+      }
+      else if (MVMVAMultiplyMatrix() == 1)
+      {
+            // light matrix
+            mx11 = fixedPoint(control_reg[L11L12].readLowerHalfword(), 12);
+            mx12 = fixedPoint(control_reg[L11L12].readUpperHalfword(), 12);
+            mx13 = fixedPoint(control_reg[L13L21].readLowerHalfword(), 12);
+            mx21 = fixedPoint(control_reg[L13L21].readUpperHalfword(), 12);
+            mx22 = fixedPoint(control_reg[L22L23].readLowerHalfword(), 12);
+            mx23 = fixedPoint(control_reg[L22L23].readUpperHalfword(), 12);
+            mx31 = fixedPoint(control_reg[L31L32].readLowerHalfword(), 12);
+            mx32 = fixedPoint(control_reg[L31L32].readUpperHalfword(), 12);
+            mx33 = fixedPoint(control_reg[L33].readLowerHalfword(), 12);
+      }
+      else if (MVMVAMultiplyMatrix() == 2)
+      {
+            // color matrix
+            mx11 = fixedPoint(control_reg[LR1LR2].readLowerHalfword(), 12);
+            mx12 = fixedPoint(control_reg[LR1LR2].readUpperHalfword(), 12);
+            mx13 = fixedPoint(control_reg[LR3LG1].readLowerHalfword(), 12);
+            mx21 = fixedPoint(control_reg[LR3LG1].readUpperHalfword(), 12);
+            mx22 = fixedPoint(control_reg[LG2LG3].readLowerHalfword(), 12);
+            mx23 = fixedPoint(control_reg[LG2LG3].readUpperHalfword(), 12);
+            mx31 = fixedPoint(control_reg[LB1LB2].readLowerHalfword(), 12);
+            mx32 = fixedPoint(control_reg[LB1LB2].readUpperHalfword(), 12);
+            mx33 = fixedPoint(control_reg[LB3].readLowerHalfword(), 12);
+      }
+
+      if (MVMVAMultiplyVector() == 0)
+      {
+            // v0
+            vx = fixedPoint(data_reg[VXY0].readLowerHalfword(), 12);
+            vy = fixedPoint(data_reg[VXY0].readUpperHalfword(), 12);
+            vz = fixedPoint(data_reg[VZ0].readLowerHalfword(), 12);
+      }
+      else if (MVMVAMultiplyVector() == 1)
+      {
+            // v1
+            vx = fixedPoint(data_reg[VXY1].readLowerHalfword(), 12);
+            vy = fixedPoint(data_reg[VXY1].readUpperHalfword(), 12);
+            vz = fixedPoint(data_reg[VZ1].readLowerHalfword(), 12);
+      }
+      else if (MVMVAMultiplyVector() == 2)
+      {
+            // v2
+            vx = fixedPoint(data_reg[VXY2].readLowerHalfword(), 12);
+            vy = fixedPoint(data_reg[VXY2].readUpperHalfword(), 12);
+            vz = fixedPoint(data_reg[VZ2].readLowerHalfword(), 12);
+      }
+      else
+      {
+            // ir
+            vx = fixedPoint(data_reg[IR1].readLowerHalfword(), 12);
+            vy = fixedPoint(data_reg[IR2].readLowerHalfword(), 12);
+            vz = fixedPoint(data_reg[IR3].readLowerHalfword(), 12);
+      }
+
+      if (MVMVATranslationVector() == 0)
+      {
+            // tr
+            cvx = fixedPoint(control_reg[TRX].read(), 0);
+            cvy = fixedPoint(control_reg[TRY].read(), 0);
+            cvz = fixedPoint(control_reg[TRZ].read(), 0);
+      }
+      else if (MVMVATranslationVector() == 1)
+      {
+            // bk
+            cvx = fixedPoint(control_reg[RBK].read(), 12);
+            cvy = fixedPoint(control_reg[GBK].read(), 12);
+            cvz = fixedPoint(control_reg[BBK].read(), 12);
+      }
+
+      /***** CALCULATION *****/
+      fixedPoint mac1 = cvx + (mx11 * vx) + (mx12 * vy) + (mx13 * vz);
+      fixedPoint mac2 = cvy + (mx21 * vx) + (mx22 * vy) + (mx23 * vz);
+      fixedPoint mac3 = cvz + (mx31 * vx) + (mx32 * vy) + (mx33 * vz);
+
+      /***** OUTPUTS *****/
+      data_reg[MAC1].write(A1(mac1, 12));
+      data_reg[MAC2].write(A2(mac2, 12));
+      data_reg[MAC3].write(A3(mac3, 12));
+      data_reg[IR1].writeLowerHalfword(B1(mac1, 12));
+      data_reg[IR2].writeLowerHalfword(B2(mac2, 12));
+      data_reg[IR3].writeLowerHalfword(B3(mac3, 12));
 }
 
 void gte::DCPL()

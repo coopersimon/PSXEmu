@@ -27,6 +27,10 @@ class fixedPoint
 
 public:
       /*** CONSTRUCTORS ***/
+      // zero constructor
+      fixedPoint() :
+            number(0), frac_range(0) {}
+
       fixedPoint(word value, unsigned frac_bits) :
             number(s_word(value)), frac_range(frac_bits) {}
 
