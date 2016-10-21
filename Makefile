@@ -1,5 +1,5 @@
 # MACROS
-CXX=g++
+CXX=clang++
 CXXFLAGS=-std=c++11 -Iinclude -Wall
 CPULINK=target/Memory.o target/Coprocessor.o target/SCC.o target/FixedPointMaths.o target/GTE.o target/CPU.o
 TESTCPULINK=test/cpu/src/TestCPU.o target/Memory.o target/Coprocessor.o target/SCC.o target/FixedPointMaths.o target/GTE.o target/CPU.o
@@ -9,8 +9,9 @@ TESTGTELINK=test/gte/src/TestGTE.o target/Coprocessor.o target/FixedPointMaths.o
 testall : testcpu testgte
 
 testcpu : \
-test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4 \
-test/cpu/bin/SUB_1 
+test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4 test/cpu/bin/ADD_5 test/cpu/bin/ADD_6 \
+test/cpu/bin/SUB_1 \
+test/cpu/bin/MFCz_1
 
 testgte : \
 test/gte/bin/DCPL_1 test/gte/bin/DCPL_2 test/gte/bin/DCPL_3 \
@@ -36,8 +37,17 @@ test/cpu/bin/ADD_3 : test/cpu/src/ADD_3.cpp $(TESTCPULINK)
 test/cpu/bin/ADD_4 : test/cpu/src/ADD_4.cpp $(TESTCPULINK)
 	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_4.cpp $(TESTCPULINK) -o $@
 
+test/cpu/bin/ADD_5 : test/cpu/src/ADD_5.cpp $(TESTCPULINK)
+	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_5.cpp $(TESTCPULINK) -o $@
+
+test/cpu/bin/ADD_6 : test/cpu/src/ADD_6.cpp $(TESTCPULINK)
+	$(CXX) $(CXXFLAGS) test/cpu/src/ADD_6.cpp $(TESTCPULINK) -o $@
+
 test/cpu/bin/SUB_1 : test/cpu/src/SUB_1.cpp $(TESTCPULINK)
 	$(CXX) $(CXXFLAGS) test/cpu/src/SUB_1.cpp $(TESTCPULINK) -o $@
+
+test/cpu/bin/MFCz_1 : test/cpu/src/MFCz_1.cpp $(TESTCPULINK)
+	$(CXX) $(CXXFLAGS) test/cpu/src/MFCz_1.cpp $(TESTCPULINK) -o $@
 
 
 # TEST GTE

@@ -23,6 +23,7 @@ typedef int32_t   s_word;
 typedef uint64_t  doubleword;
 typedef int64_t   s_doubleword;
 
+
 // this represents any kind of memory
 template<typename T>
 class rawMemory
@@ -40,6 +41,7 @@ protected:
       inline void readMultiple(unsigned address, T *out, unsigned amount) { for (int i = 0; i < amount; i++) out[i] = data[address + i]; }
       inline void writeMultiple(unsigned address, T *in, unsigned amount) { for (int i = 0; i < amount; i++) data[address + i] = in[i]; }
 };
+
 
 // this represents the public memory API for loading different mem sizes.
 // basically used when load/storing within the CPU
@@ -62,7 +64,9 @@ public:
       virtual void writeWordBig(unsigned address, word in) = 0;
 };
 
+
 // TODO: double check if inhereiting from interface is correct call
+// TODO: should this be in this header? or should it be closer to CPU?
 // the bus contains a list of pointers to memory devices so they can be accessed from within processor classes
 class memBus : public memoryInterface
 {
@@ -75,15 +79,46 @@ class memBus : public memoryInterface
       	memoryPointer(unsigned addr_start, unsigned  addr_end, memoryInterface *mem_dev) :
                   address_start(addr_start), address_end(addr_end), memory_device(mem_dev) {} 
       };
+
+      std::vector<memoryPointer> bus_list;
       
 public:
-      std::vector<memoryPointer> bus_list;
       // the memory devices are not owned by the bus so we don't have to delete them afterwards
       void mountMemory(memoryInterface *memory_device, unsigned address_start, unsigned address_end)
       	{ bus_list.push_back(memoryPointer(address_start, address_end, memory_device)); }
       
       // all of these look up the address on the bus, translate it and operate on memory
       int find(unsigned address);
+     
+      // memoryInterface functions
+      byte readByte(unsigned address);
+      void writeByte(unsigned address, byte in);
+      
+      halfword readHalfwordLittle(unsigned address);
+      void writeHalfwordLittle(unsigned address, halfword in);
+      halfword readHalfwordBig(unsigned address);
+      void writeHalfwordBig(unsigned address, halfword in);
+      
+      word readWordLittle(unsigned address);
+      void writeWordLittle(unsigned address, word in);
+      word readWordBig(unsigned address);
+      void writeWordBig(unsigned address, word in);
+};
+
+
+// this represents RAM
+class RAMImpl : public rawMemory<byte>, public memoryInterface
+{
+      unsigned addr_bits;
+      
+      inline unsigned maskAddress(unsigned address)
+      {
+      	return address & ((1 << addr_bits) | ((1 << addr_bits) - 1));
+      }
+      
+public:
+      // input number of bits for addressing. memory is stored in terms of data size.
+      RAMImpl(unsigned addr_bits_in) : rawMemory(1 << addr_bits_in), addr_bits(addr_bits_in) {}
       
       byte readByte(unsigned address);
       void writeByte(unsigned address, byte in);
@@ -99,32 +134,5 @@ public:
       void writeWordBig(unsigned address, word in);
 };
 
-// this represents RAM
-class RAMImpl : public rawMemory<byte>, public memoryInterface
-{
-      unsigned addr_bits;
-      
-      inline unsigned maskAddress(unsigned address)
-      {
-      	return address & ((1 << addr_bits) | ((1 << addr_bits) - 1));
-      }
-      
-public:
-      // input number of bits for addressing. memory is stored in terms of data size.
-      RAMImpl(unsigned addr_bits_in) : rawMemory(1 << addr_bits_in), addr_bits(addr_bits_in) {};
-      
-      byte readByte(unsigned address);
-      void writeByte(unsigned address, byte in);
-      
-      halfword readHalfwordLittle(unsigned address);
-      void writeHalfwordLittle(unsigned address, halfword in);
-      halfword readHalfwordBig(unsigned address);
-      void writeHalfwordBig(unsigned address, halfword in);
-      
-      word readWordLittle(unsigned address);
-      void writeWordLittle(unsigned address, word in);
-      word readWordBig(unsigned address);
-      void writeWordBig(unsigned address, word in);
-};
 
 #endif

@@ -5,9 +5,11 @@
 // TODO: dealing with multiple bytes might need improvement. this needs to be quick.
 // these also need to be carefully tested. casting etc
 
+/*** Memory Bus ***/
+
 int memBus::find(unsigned address)
 {
-	//std::cout << "address: " << address << std::endl;
+      // search list for correct memory device
 	for (unsigned i = 0; i < bus_list.size(); i++)
 	{
 		if ((address >= bus_list[i].address_start) && (address <= bus_list[i].address_end))
@@ -19,6 +21,7 @@ int memBus::find(unsigned address)
 	throw adesException();
 }
 
+// TODO: all memBus memoryInterface things should be subtracting address_start from their address.
 byte memBus::readByte(unsigned address)
 {
 	return bus_list[find(address)].memory_device->readByte(address);
@@ -68,6 +71,9 @@ void memBus::writeWordBig(unsigned address, word in)
 {
 	bus_list[find(address)].memory_device->writeWordBig(address, in);
 }
+
+
+/*** RAM ***/
 
 void RAMImpl::writeByte(unsigned address, byte in)
 {

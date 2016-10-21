@@ -29,6 +29,9 @@ public:
       // load no op into memory
       void noOp();
 
+      // force set the memory location (for branches, exceptions etc)
+      void setMemLocation(int mem_location_in);
+
       // run instructions in memory
       void run();
 

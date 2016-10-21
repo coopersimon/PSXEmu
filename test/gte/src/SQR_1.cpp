@@ -23,7 +23,7 @@ int main(int argc, char **argv)
           tester.getData(gte::IR1) == 0x5CA4 &&
           tester.getData(gte::IR2) == 0x7FFF && // saturated
           tester.getData(gte::IR3) == 0x00B3 &&
-          tester.getControl(gte::FLAG) == 0x00800000)
+          tester.getControl(gte::FLAG) == 0x80800000)
             std::cout << argv[0] << " Pass" << std::endl;
       else
       {

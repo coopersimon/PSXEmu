@@ -156,10 +156,10 @@ void cpu::ADD()
 {
 	word result = source() + target();
 	if (0x80000000 & (source() ^ result)) // if output sign and input sign are different
-	{	
-            if (0x80000000 & source() & target()) // if the operand signs are the same
+	{
+            if ( 0x80000000 & ~(source() ^ target()) ) // if the operand signs are the same
 			throw ovfException();
-	}
+      }
 	dest(result);
 }
 
@@ -560,13 +560,13 @@ void cpu::BCOND()
 
 void cpu::BGEZ()
 {
-	if (source() >= 0)
+	if (s_word(source()) >= 0)
 		branchRoutine(imm());
 }
 
 void cpu::BGEZAL()
 {
-	if (source() >= 0)
+	if (s_word(source()) >= 0)
 	{
 		gp_reg[31].write(PC.read() + 8);
 		branchRoutine(imm());
@@ -575,13 +575,13 @@ void cpu::BGEZAL()
 
 void cpu::BLTZ()
 {
-	if (source() < 0)
+	if (s_word(source()) < 0)
 		branchRoutine(imm());
 }
 
 void cpu::BLTZAL()
 {
-	if (source() < 0)
+	if (s_word(source()) < 0)
 	{
 		gp_reg[31].write(PC.read() + 8);
 		branchRoutine(imm());

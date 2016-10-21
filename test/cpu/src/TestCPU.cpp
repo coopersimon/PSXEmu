@@ -51,6 +51,11 @@ void CPUtestbench::noOp()
       storeIntoMemory(0);
 }
 
+void CPUtestbench::setMemLocation(int mem_location_in)
+{
+      memory_location = mem_location_in;
+}
+
 void CPUtestbench::run()
 {
       for (unsigned i = 0; i < instr_count; i++)
