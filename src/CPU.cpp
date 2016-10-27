@@ -78,7 +78,7 @@ cpu::cpu(memoryInterface *memIn)
 
 void cpu::stepCPU()
 {
-      // set exception PC
+      // ready exception PC, so it can be stored if needed
       setEPC();
       // get instruction from mem & advance PC
       instruction = memory->readWordLittle(PC.read());
@@ -86,6 +86,7 @@ void cpu::stepCPU()
       // decode instruction
       word opcode = (instruction >> 26) & 0x3F;
       try {
+            // TODO: check for interrupts and throw
       	if (opcode == 0)
       	{
       		// execute r-type instruction
@@ -124,19 +125,22 @@ void cpu::stepCPU()
             // set current
             SCC.data_reg[scc::SR].writeBits(0, 1, 1);
             SCC.data_reg[scc::SR].writeBits(0, 1, 0);
-      
+
+            // store exception PC
+            SCC.data_reg[scc::EPC].writeBits(exception_PC);
+
             // jump to exception handler
             // if BEV == 1
             if ((SCC.data_reg[scc::SR].read() >> 22) & 1)
             {
                   PC.write(0x1FC00180);
-                  PC_next.write(0x1FC00184);
+                  PC_next.write(0x1FC00180);
             }
             // if BEV == 0
             else
             {
                   PC.write(0x00000080);
-                  PC_next.write(0x00000084);
+                  PC_next.write(0x00000080);
             }
       }
       
@@ -174,7 +178,7 @@ void cpu::ADDI()
 	word result = source() + imm();
 	if (0x80000000 & (source() ^ result)) // if output sign and input sign are different
 	{
-		if (0x80000000 & source() & target()) // if the operand signs are the same
+		if (0x80000000 & ~(source() ^ target())) // if the operand signs are the same
 			throw ovfException();
 	}
 	target(result);

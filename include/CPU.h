@@ -51,6 +51,7 @@ class cpu
 
       /*** Exception related variables ***/
       bool branch_delay;      // true if instruction currently executing is in the branch delay slot
+      unsigned exception_PC;  // contains 
 
 	/*** Function Pointers ***/
 	std::vector<std::function<void(cpu*)>> r_type;
@@ -93,7 +94,7 @@ private:
             }
             else //if (!branch_delay)      // if PC is not currently in a branch delay slot
             {
-                  SCC.data_reg[scc::EPC].writeBits(PC.read());
+                  exception_PC = PC.read();
                   branch_delay = false;
             }
       }

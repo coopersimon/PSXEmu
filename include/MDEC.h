@@ -37,17 +37,22 @@ public:
 class mdec : public dmaDevice
 {
       // status register components
-      unsigned data_out_fifo_empty : 1;
-      unsigned data_in_fifo_full : 1;
-      unsigned command_busy : 1;
-      unsigned data_in_request : 1;
-      unsigned data_out_request : 1;
-      unsigned data_output_depth : 2;
-      unsigned data_output_signed : 1;
-      unsigned data_output_bit_15 : 1;
-      unsigned : 4;
-      unsigned current_block : 3;
-      unsigned param_words_remaining : 16;
+      union {
+            struct {
+                  unsigned data_out_fifo_empty : 1;
+                  unsigned data_in_fifo_full : 1;
+                  unsigned command_busy : 1;
+                  unsigned data_in_request : 1;
+                  unsigned data_out_request : 1;
+                  unsigned data_output_depth : 2;
+                  unsigned data_output_signed : 1;
+                  unsigned data_output_bit_15 : 1;
+                  unsigned : 4;
+                  unsigned current_block : 3;
+                  unsigned param_words_remaining : 16;
+            } bit_fields;
+            word data_field;
+      } status_reg;
 
       // data FIFO
       FIFOImpl<word> out_data_FIFO;
@@ -71,8 +76,8 @@ public:
       word readStatusReg();
 
       // DMA functions: effectively identical to executeCommand
-      void wordFromDMA(word in);
-      word wordToDMA();
+      void wordFromDMA(word in) override;
+      word wordToDMA() override;
 
 private:
       // internal decoding functions:

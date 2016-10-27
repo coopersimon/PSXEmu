@@ -10,14 +10,13 @@ int main(int argc, char** argv)
       cpu device(mem);
       CPUtestbench tester(&device);
 
-      tester.storeReg(1, 177);
-      tester.constructInstruction(COP2, 4, 1, gte::VXY0, 0, 0);
-
-      tester.constructInstruction(COP2, 0, gte::VXY0, 2, 0, 0);
-
+      tester.storeReg(5, -12345);
+      tester.storeReg(15, -54321);
+      tester.constructInstruction(0, 5, 15, 20, 0, SUB);
+      
       tester.run();
 
-      if (tester.getReg(2) == 177)
+      if (tester.getReg(20) == 41976)
             std::cout << argv[0] << " Pass" << std::endl;
       else
             std::cout << argv[0] << " Fail" << std::endl;

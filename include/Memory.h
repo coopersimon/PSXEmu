@@ -91,18 +91,18 @@ public:
       int find(unsigned address);
      
       // memoryInterface functions
-      byte readByte(unsigned address);
-      void writeByte(unsigned address, byte in);
+      byte readByte(unsigned address) override;
+      void writeByte(unsigned address, byte in) override;
       
-      halfword readHalfwordLittle(unsigned address);
-      void writeHalfwordLittle(unsigned address, halfword in);
-      halfword readHalfwordBig(unsigned address);
-      void writeHalfwordBig(unsigned address, halfword in);
+      halfword readHalfwordLittle(unsigned address) override;
+      void writeHalfwordLittle(unsigned address, halfword in) override;
+      halfword readHalfwordBig(unsigned address) override;
+      void writeHalfwordBig(unsigned address, halfword in) override;
       
-      word readWordLittle(unsigned address);
-      void writeWordLittle(unsigned address, word in);
-      word readWordBig(unsigned address);
-      void writeWordBig(unsigned address, word in);
+      word readWordLittle(unsigned address) override;
+      void writeWordLittle(unsigned address, word in) override;
+      word readWordBig(unsigned address) override;
+      void writeWordBig(unsigned address, word in) override;
 };
 
 
@@ -120,18 +120,18 @@ public:
       // input number of bits for addressing. memory is stored in terms of data size.
       RAMImpl(unsigned addr_bits_in) : rawMemory(1 << addr_bits_in), addr_bits(addr_bits_in) {}
       
-      byte readByte(unsigned address);
-      void writeByte(unsigned address, byte in);
+      byte readByte(unsigned address) override;
+      void writeByte(unsigned address, byte in) override;
       
-      halfword readHalfwordLittle(unsigned address);
-      void writeHalfwordLittle(unsigned address, halfword in);
-      halfword readHalfwordBig(unsigned address);
-      void writeHalfwordBig(unsigned address, halfword in);
+      halfword readHalfwordLittle(unsigned address) override;
+      void writeHalfwordLittle(unsigned address, halfword in) override;
+      halfword readHalfwordBig(unsigned address) override;
+      void writeHalfwordBig(unsigned address, halfword in) override;
       
-      word readWordLittle(unsigned address);
-      void writeWordLittle(unsigned address, word in);
-      word readWordBig(unsigned address);
-      void writeWordBig(unsigned address, word in);
+      word readWordLittle(unsigned address) override;
+      void writeWordLittle(unsigned address, word in) override;
+      word readWordBig(unsigned address) override;
+      void writeWordBig(unsigned address, word in) override;
 };
 
 
