@@ -13,9 +13,6 @@
 #include <vector>
 
 
-// TODO: all devices which utilise DMA need to inherit from the same class.
-// TODO: should this class be declared in this header?
-
 // all devices which have a DMA channel inherit from this class.
 class dmaDevice
 {
@@ -101,29 +98,24 @@ public:
       dma(RAMImpl* main_ram, std::vector<dmaDevice*> &devices);
 
       // memoryInterface functions
-      byte readByte(unsigned address) override;
-      void writeByte(unsigned address, byte in) override;
+      word readWord(unsigned address) override;
+      void writeWord(unsigned address, word in) override;
       
-      halfword readHalfwordLittle(unsigned address) override;
-      void writeHalfwordLittle(unsigned address, halfword in) override;
-      halfword readHalfwordBig(unsigned address) override;
-      void writeHalfwordBig(unsigned address, halfword in) override;
-      
-      word readWordLittle(unsigned address) override;
-      void writeWordLittle(unsigned address, word in) override;
-      word readWordBig(unsigned address) override;
-      void writeWordBig(unsigned address, word in) override;
-
 private:
-      inline word readRegister(unsigned device)
+      // main interface functions: these are mapped from memoryInterface functions
+      // these set registers and can trigger DMA channels to go active
+
+      inline word readRegister(unsigned address)
       {
-            if ((device < 0xF) && (device >= 0x8))
+            unsigned device = address & 0xFF;
+
+            if ((device < 0xF0) && (device >= 0x80))
                   return channel_list[device - 8].readRegister(address % 0xF);
             
-            else if (address == 0xF0)
+            else if (device == 0xF0)
                   return control_reg;
             
-            else if (address == 0xF4)
+            else if (device == 0xF4)
                   return interrupt_reg;
             
             // exception? idk.
@@ -131,15 +123,17 @@ private:
                   return 0;
       }
 
-      inline void writeRegister(unsigned device, word in)
+      inline void writeRegister(unsigned address, word in)
       {
-            if ((device < 0xF) && (device >= 0x8))
+            unsigned device = address & 0xFF;
+
+            if ((device < 0xF0) && (device >= 0x80))
                   channel_list[device - 8].writeRegister(in, address % 0xF);
 
-            else if (address == 0xF0)
+            else if (device == 0xF0)
                   control_reg = in;
 
-            else if (address == 0xF4)
+            else if (device == 0xF4)
                   interrupt_reg = in;
       }
 };

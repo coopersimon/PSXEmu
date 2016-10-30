@@ -5,7 +5,7 @@
  *	CPU.h
  *
  *	Class used to describe the R3051 MIPS processor.
- *
+ *    Only has Little-Endian functionality.
  */
 
 // includes
@@ -46,7 +46,7 @@ class cpu
 	memoryInterface *memory;
 
 	/*** Status ***/
-	bool little_endian;	// true if cpu is in little endian mode
+	//bool little_endian;	// true if cpu is in little endian mode
 	unsigned instruction;   // contains the whole instruction
 
       /*** Exception related variables ***/
@@ -58,6 +58,10 @@ class cpu
 	std::vector<std::function<void(cpu*)>> i_type;
 	std::vector<std::function<void(cpu*)>> bcond_type;
       std::vector<std::function<void(cpu*)>> copz_instr;
+
+      /*** Store Masks ***/
+      word byte_mask[4];
+      word halfword_mask[2];
 
 public:
 	// construct processor
@@ -72,8 +76,6 @@ public:
 private:
 	/********** INLINE FUNCTIONS **********/
 
-	inline bool checkEndianness() { return little_endian; /*&& status bit*/ }
-	
 	// done at the end of every CPU step
 	inline void incrementPCNext() { PC_next.write(PC_next.read() + 4); }
 

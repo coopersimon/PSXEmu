@@ -17,16 +17,16 @@ template <typename T>
 class FIFOImpl
 {
       std::list<T> data;
-      unsigned size;
+      unsigned fifo_size;
 
 public:
-      FIFOImpl(unsigned size_in) : size(size_in) {}
+      FIFOImpl(unsigned size_in) : fifo_size(size_in) {}
 
       // writes data to back of FIFO
       void write(T in)
       {
             // if FIFO is full
-            if (data.size() == size)
+            if (data.size() == fifo_size)
             {
                   data.push_back(in);
                   data.pop_front();
@@ -41,7 +41,7 @@ public:
       T read()
       {
             // if FIFO is empty
-            if (data.size() == 0)
+            if (data.empty())
             {
                   return 0;
             }
@@ -51,6 +51,16 @@ public:
                   data.pop_front();
                   return out;
             }
+      }
+
+      bool empty()
+      {
+            return data.empty();
+      }
+
+      bool full()
+      {
+            return data.size() == fifo_size;
       }
 };
 

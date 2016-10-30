@@ -19,7 +19,9 @@ cpu::cpu(memoryInterface *memIn)
       // initialise PC
       PC.write(0);
       PC_next.write(4);
-      
+
+      // 
+
       // function pointers
       r_type = {
       	&cpu::SLL, &cpu::RESERVED, &cpu::SRL, &cpu::SRA,
@@ -74,6 +76,14 @@ cpu::cpu(memoryInterface *memIn)
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, // bc0t/bc0f instructions may need to be added here.
       	&cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED, &cpu::RESERVED
       };
+
+      byte_mask[0] = 0xFFFFFF00;
+      byte_mask[1] = 0xFFFF00FF;
+      byte_mask[2] = 0xFF00FFFF;
+      byte_mask[3] = 0x00FFFFFF;
+
+      halfword_mask[0] = 0xFFFF0000;
+      halfword_mask[1] = 0x0000FFFF;
 }
 
 void cpu::stepCPU()
@@ -81,7 +91,7 @@ void cpu::stepCPU()
       // ready exception PC, so it can be stored if needed
       setEPC();
       // get instruction from mem & advance PC
-      instruction = memory->readWordLittle(PC.read());
+      instruction = memory->readWord(PC.read());
       PC.write(PC_next.read());
       // decode instruction
       word opcode = (instruction >> 26) & 0x3F;
@@ -355,8 +365,18 @@ void cpu::SRAV()
 /********** Load/Store ****************/
 void cpu::LB()
 {
-	word address = source() + imm();
-	word result = memory->readByte(address) & 0xFF;
+	unsigned address = source() + imm();
+      // which byte of the word we are loading
+      unsigned byte_number = address % 4;
+      // align the address
+      address -= byte_number;
+
+      // load word and extract byte
+	word result = memory->readWord(address);
+      result >>= (byte_number * 8);
+      result &= 0xFF;
+
+      // sign extend
 	if (result >> 7)
 		result |= 0xFFFFFF00;
 	target(result);
@@ -364,52 +384,65 @@ void cpu::LB()
 
 void cpu::LBU()
 {
-	word address = source() + imm();
-	word result = memory->readByte(address) & 0xFF;
-	target(result);
+	unsigned address = source() + imm();
+      // which byte of the word we are loading
+      unsigned byte_number = address % 4;
+      // align the address
+      address -= byte_number;
+
+      // load word and extract byte
+	word result = memory->readWord(address);
+      result >>= (byte_number * 8);
+      result &= 0xFF;
+	
+      target(result);
 }
 
 void cpu::LH()
 {
-	word address = source() + imm();
+	unsigned address = source() + imm();
+      // check alignment
       if (address % 2)
             throw adelException();
+      unsigned halfword_number = address % 2;
+      address -= halfword_number;
 
-	word result;
-	if (checkEndianness())
-		result = memory->readHalfwordLittle(address) & 0xFFFF;
-	else
-		result = memory->readHalfwordBig(address) & 0xFFFF;
-	if (result >> 15)
+      // load word and extract halfword
+	word result = memory->readWord(address);
+      result >>= (halfword_number * 16);
+      result &= 0xFFFF;
+	
+      // sign extend
+      if (result >> 15)
 		result |= 0xFFFF0000;
 	target(result);
 }
 
 void cpu::LHU()
 {
-	word address = source() + imm();
+	unsigned address = source() + imm();
+      // check alignment
       if (address % 2)
             throw adelException();
+      unsigned halfword_number = address % 2;
+      address -= halfword_number;
 
-	word result;
-	if (checkEndianness())
-		result = memory->readHalfwordLittle(address) & 0xFFFF;
-	else
-		result = memory->readHalfwordBig(address) & 0xFFFF;
-	target(result);
+      // load word and extract halfword
+	word result = memory->readWord(address);
+      result >>= (halfword_number * 16);
+      result &= 0xFFFF;
+	
+      target(result);
 }
 
 void cpu::LW()
 {
-	word address = source() + imm();
+	unsigned address = source() + imm();
       if (address % 4)
             throw adelException();
 
-	word result;
-	if (checkEndianness())
-		result = memory->readWordLittle(address);
-	else
-		result = memory->readWordBig(address);
+	word result = memory->readWord(address);
+
 	target(result);
 }
 
@@ -421,9 +454,9 @@ void cpu::LWL()
       unsigned byte_number = address % 4;
       // align the address
       address -= byte_number;
-      
-      word load_data = memory->readWordLittle(address);
-      
+
+      word load_data = memory->readWord(address);
+
       // shift data to make it most significant
       load_data <<= (3 - byte_number) * 8;
 
@@ -431,20 +464,6 @@ void cpu::LWL()
       word masked_target = target() & (0xFFFFFFFF >> ((1 + byte_number) * 8));
 
       target(load_data | masked_target);
-      
-      /*word address = source() + imm();
-	word byte_number = address % 4;
-	address -= byte_number;	// align address
-
-	word load_data = memory->readWordBig(address);
-	
-	// shift word to make the selected byte the most significant, and fill in to the right
-	load_data <<= byte_number * 8;
-
-	// mask target() so it matches the empty bytes left by the load data
-	word result = target() & (0xFFFFFFFF >> ((4 - byte_number) * 8));
-
-	target(result | load_data);*/
 }
 
 void cpu::LWR()
@@ -456,7 +475,7 @@ void cpu::LWR()
       // align the address
       address -= byte_number;
 
-      word load_data = memory->readWordLittle(address);
+      word load_data = memory->readWord(address);
 
       // shift data to make it least significant
       load_data >>= byte_number * 8;
@@ -465,46 +484,53 @@ void cpu::LWR()
       word masked_target = target() & (0xFFFFFFFF << ((4 - byte_number) * 8));
 
       target(masked_target | load_data);
-
-	/*word address = source() + imm();
-	word byte_number = address % 4;
-	address -= byte_number;	// align address
-
-	word load_data = memory->readWordBig(address);
-
-	// shift word to make the selected byte the least significant, and fill in to the left
-	load_data >>= (3 - byte_number) * 8;
-
-	// mask target() so it matches the empty bytes left by the load data
-	word result = target() & (0xFFFFFFFF << ((1 + byte_number) * 8));
-
-	target(result | load_data);*/
 }
 
 
 void cpu::SB()
 {
-	word address = source() + imm();
-	//byte data_in = gp_reg[target()].read() & 0xFF;
-	memory->writeByte(address, byte(target()));
+	unsigned address = source() + imm();
+      // number of byte to replace
+      unsigned byte_number = address % 4;
+      // align the address
+      address -= byte_number;
+
+      // load word containing byte to store
+      word data = memory->readWord(address);
+      // mask byte
+      word result = (target() & 0xFF) << (byte_number * 8);
+      // mask data and combine with target data
+      result |= data & byte_mask[byte_number];
+
+	memory->writeWord(address, result);
 }
 
 void cpu::SH()
 {
-	word address = source() + imm();
-	if (checkEndianness())
-		memory->writeHalfwordLittle(address, halfword(target()));
-	else
-		memory->writeHalfwordBig(address, halfword(target()));
+	unsigned address = source() + imm();
+      if (address % 2)
+            throw adesException();
+      // number of halfword to replace
+      unsigned halfword_number = address % 2;
+      // align the address
+      address -= halfword_number;
+
+      // load word containing halfword to store
+      word data = memory->readWord(address);
+      // mask halfword
+      word result = (target() & 0xFFFF) << (halfword_number * 16);
+      // mask data and combine with target data
+      result |= data & halfword_mask[halfword_number];
+
+	memory->writeWord(address, result);
 }
 
 void cpu::SW()
 {
 	word address = source() + imm();
-	if (checkEndianness())
-		memory->writeWordLittle(address, target());
-	else
-		memory->writeWordBig(address, target());
+      if (address % 4)
+            throw adesException();
+      memory->writeWord(address, target());
 }
 
 void cpu::SWL()
@@ -517,9 +543,9 @@ void cpu::SWL()
       word reg_data = target() >> ((3 - byte_number) * 8);
 
       // mask data in word so it matches the empty bytes left
-      word load_data = memory->readWordLittle(address) & (0xFFFFFFFF << ((1 + byte_number) * 8));
+      word load_data = memory->readWord(address) & (0xFFFFFFFF << ((1 + byte_number) * 8));
 
-      memory->writeWordLittle(address, (load_data | reg_data));
+      memory->writeWord(address, (load_data | reg_data));
 }
 
 void cpu::SWR()
@@ -532,9 +558,9 @@ void cpu::SWR()
       word reg_data = target() << (byte_number * 8);
 
       // mask data in word so it matches the empty bytes left
-      word load_data = memory->readWordLittle(address) & (0xFFFFFFFF >> ((4 - byte_number) * 8));
+      word load_data = memory->readWord(address) & (0xFFFFFFFF >> ((4 - byte_number) * 8));
 
-      memory->writeWordLittle(address, (reg_data | load_data));
+      memory->writeWord(address, (reg_data | load_data));
 }
 
 
@@ -677,21 +703,15 @@ void cpu::BREAK()
 void cpu::LWCz()
 {
 	word address = source() + imm();
-	word data;
-	if (checkEndianness())
-		data = memory->readWordLittle(address);
-	else
-		data = memory->readWordBig(address);
+	word data = memory->readWord(address);
 	cop[coproc()]->writeDataReg(data, target_val());
 }
 
 void cpu::SWCz()
 {
 	word address = source() + imm();
-	if (checkEndianness())
-		memory->writeWordLittle( address, cop[coproc()]->readDataReg(target_val()) );
-	else
-		memory->writeWordBig( address, cop[coproc()]->readDataReg(target_val()) );
+      word data = cop[coproc()]->readDataReg(target_val());
+	memory->writeWord(address, data);
 }
 
 void cpu::MTCz()

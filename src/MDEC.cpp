@@ -1,24 +1,28 @@
 #include <MDEC.h>
 
-// TODO: this function needs a data pointer.
-void mdec::executeCommand(word command, mdecBlock* data_blocks)
+mdec::mdec()
 {
-      unsigned opcode = (command >> 29) & 0x7;
+      // instantiate regs
+      //
+      // instantiate FIFOs
+}
 
-      // decode macroblock
+void mdec::executeCommand(word parameter)
+{
+      opcode = (parameter >> 29) & 0x7;
+
+      // set parameters
+      data_output_depth = (command >> 27) & 0x3;
+      data_output_signed = (command >> 26) & 0x1;
+      data_output_bit_15 = (command >> 25) & 0x1;
+
       if (opcode == 1)
       {
-            data_output_depth = (command >> 27) & 0x3;
-            data_output_signed = (command >> 26) & 0x1;
-            data_output_bit_15 = (command >> 25) & 0x1;
             param_words_remaining = command & 0xFFFF;
             param_words_remaining--;
-
-            // read in macroblocks and decode sequentially
-
       }
 
-      // set quant table
+      /* set quant table
       else if (opcode == 2)
       {
             for (int i = 0; i < 64; i++)
@@ -41,7 +45,7 @@ void mdec::executeCommand(word command, mdecBlock* data_blocks)
             {
                   scale_table[i] = data_blocks[i];
             }
-      }
+      }*/
 }
 
 

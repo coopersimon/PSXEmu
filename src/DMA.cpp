@@ -91,14 +91,14 @@ word dmaChannel::readRegister(DMAReg reg)
 
 void dmaChannel::transferWordFromRAM()
 {
-      word data = main_ram->readWordLittle(base_address);
+      word data = main_ram->readWord(base_address);
       device->wordFromDMA(data);
 }
 
 void dmaChannel::transferWordToRAM()
 {
       word data = device->wordToDMA();
-      main_ram->writeWordLittle(base_address, data);
+      main_ram->writeWord(base_address, data);
 }
 
 
@@ -114,15 +114,12 @@ dma::dma(RAMImpl* main_ram, std::vector<dmaDevice*> &devices)
       control_reg = 0x07654321;
 }
 
-word dma::readWordLittle(unsigned address)
+word dma::readWord(unsigned address)
 {
-      // calculate device needed:
-      device = (address >> 4) & 0xF;
       return readRegister(device);
 }
 
-void dma::writeWordLittle(unsigned address, word in)
+void dma::writeWord(unsigned address, word in)
 {
-      device = (address >> 4) & 0xF;
       writeRegister(device, in);
 }

@@ -34,7 +34,7 @@ public:
 };
 
 
-class mdec : public dmaDevice
+class mdec : public dmaDevice, public memoryInterface
 {
       // status register components
       union {
@@ -54,8 +54,11 @@ class mdec : public dmaDevice
             word data_field;
       } status_reg;
 
-      // data FIFO
-      FIFOImpl<word> out_data_FIFO;
+      unsigned opcode;
+
+      // data FIFOs
+      FIFOImpl<word> in_data_buffer;
+      FIFOImpl<word> out_data_buffer;
 
       // tables
       halfword lum_quant_table[64];
@@ -75,9 +78,13 @@ public:
       void setControl(word command);
       word readStatusReg();
 
-      // DMA functions: effectively identical to executeCommand
+      // DMA functions: effectively identical to 0x1F801820 reg
       void wordFromDMA(word in) override;
       word wordToDMA() override;
+
+      // memoryInterface functions
+      word readWord(unsigned address) override;
+      void writeWord(unsigned address, word in) override;
 
 private:
       // internal decoding functions:

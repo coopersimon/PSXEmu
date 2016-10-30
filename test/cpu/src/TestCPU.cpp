@@ -6,7 +6,7 @@ using namespace test;
 
 void CPUtestbench::storeIntoMemory(word instruction)
 {
-      device->memory->writeWordLittle(memory_location, instruction);
+      device->memory->writeWord(memory_location, instruction);
       memory_location += 4;
 }
 

@@ -35,33 +35,22 @@ protected:
       rawMemory(unsigned data_size) { data = new T[data_size]; }
       ~rawMemory() { delete[] data; }
       
-      inline void read(unsigned address, T &out) { out = data[address]; }
+      inline T read(unsigned address) { return data[address]; }
       inline void write(unsigned address, T in) { data[address] = in; }
       // reading and writing multiple might be a bit overkill in the primitive raw memory class
-      inline void readMultiple(unsigned address, T *out, unsigned amount) { for (int i = 0; i < amount; i++) out[i] = data[address + i]; }
-      inline void writeMultiple(unsigned address, T *in, unsigned amount) { for (int i = 0; i < amount; i++) data[address + i] = in[i]; }
+      //inline void readMultiple(unsigned address, T *out, unsigned amount) { for (int i = 0; i < amount; i++) out[i] = data[address + i]; }
+      //inline void writeMultiple(unsigned address, T *in, unsigned amount) { for (int i = 0; i < amount; i++) data[address + i] = in[i]; }
 };
 
 
-// this represents the public memory API for loading different mem sizes.
-// basically used when load/storing within the CPU
+// this represents the public memory API for loading/storing memory.
 class memoryInterface
 {
 public:
       virtual ~memoryInterface() {}
       
-      virtual byte readByte(unsigned address) = 0;
-      virtual void writeByte(unsigned address, byte in) = 0;
-      
-      virtual halfword readHalfwordLittle(unsigned address) = 0;
-      virtual void writeHalfwordLittle(unsigned address, halfword in) = 0;
-      virtual halfword readHalfwordBig(unsigned address) = 0;
-      virtual void writeHalfwordBig(unsigned address, halfword in) = 0;
-      
-      virtual word readWordLittle(unsigned address) = 0;
-      virtual void writeWordLittle(unsigned address, word in) = 0;
-      virtual word readWordBig(unsigned address) = 0;
-      virtual void writeWordBig(unsigned address, word in) = 0;
+      virtual word readWord(unsigned address) = 0;
+      virtual void writeWord(unsigned address, word in) = 0;
 };
 
 
@@ -87,27 +76,17 @@ public:
       void mountMemory(memoryInterface *memory_device, unsigned address_start, unsigned address_end)
       	{ bus_list.push_back(memoryPointer(address_start, address_end, memory_device)); }
       
-      // all of these look up the address on the bus, translate it and operate on memory
+      // all of these look up the address on the bus and return the appropriate device
       int find(unsigned address);
      
       // memoryInterface functions
-      byte readByte(unsigned address) override;
-      void writeByte(unsigned address, byte in) override;
-      
-      halfword readHalfwordLittle(unsigned address) override;
-      void writeHalfwordLittle(unsigned address, halfword in) override;
-      halfword readHalfwordBig(unsigned address) override;
-      void writeHalfwordBig(unsigned address, halfword in) override;
-      
-      word readWordLittle(unsigned address) override;
-      void writeWordLittle(unsigned address, word in) override;
-      word readWordBig(unsigned address) override;
-      void writeWordBig(unsigned address, word in) override;
+      word readWord(unsigned address) override;
+      void writeWord(unsigned address, word in) override;
 };
 
 
 // this represents RAM
-class RAMImpl : public rawMemory<byte>, public memoryInterface
+class RAMImpl : public rawMemory<word>, public memoryInterface
 {
       unsigned addr_bits;
       
@@ -117,21 +96,11 @@ class RAMImpl : public rawMemory<byte>, public memoryInterface
       }
       
 public:
-      // input number of bits for addressing. memory is stored in terms of data size.
-      RAMImpl(unsigned addr_bits_in) : rawMemory(1 << addr_bits_in), addr_bits(addr_bits_in) {}
+      // input number of bits for addressing at word level
+      RAMImpl(unsigned addr_bits_in) : rawMemory(1 << (addr_bits_in)), addr_bits(addr_bits_in) {}
       
-      byte readByte(unsigned address) override;
-      void writeByte(unsigned address, byte in) override;
-      
-      halfword readHalfwordLittle(unsigned address) override;
-      void writeHalfwordLittle(unsigned address, halfword in) override;
-      halfword readHalfwordBig(unsigned address) override;
-      void writeHalfwordBig(unsigned address, halfword in) override;
-      
-      word readWordLittle(unsigned address) override;
-      void writeWordLittle(unsigned address, word in) override;
-      word readWordBig(unsigned address) override;
-      void writeWordBig(unsigned address, word in) override;
+      word readWord(unsigned address) override;
+      void writeWord(unsigned address, word in) override;
 };
 
 
