@@ -12,10 +12,9 @@
 * Interrupts
 * Controllers
 
-CPU needs to be tested in depth: the testbench is written and tests can be written to! Don't be afraid to write tests
+* Internally: Some sort of error system. (e.g. memory addresses)
 
-DMA hierarchy needs to be sorted. Current plan is that it will include all other devices, and map generic memory accesses to specific functions inside those devices.
-For example, the CPU will write to memory address 0x1F801820, which will go to the DMA. The DMA will decode that address to mean calling the MDEC command function.
+CPU needs to be tested in depth: the testbench is written and tests can be written to! Don't be afraid to write tests
 
 
 # DONE:
@@ -35,6 +34,10 @@ For example, the CPU will write to memory address 0x1F801820, which will go to t
 
 [In depth documentation](http://problemkaputt.de/psx-spx.htm)
 
+[Component docs](http://psx.rules.org/psxrul2.shtml)
+
 [Vulkan Spec](https://www.khronos.org/registry/vulkan/specs/1.0/pdf/vkspec.pdf)
 
 [Vulkan Spec html](https://www.khronos.org/registry/vulkan/specs/1.0/xhtml/vkspec.html)
+
+[This forum is useful for MDEC](http://www.psxdev.net/forum/viewtopic.php?f=70&t=551&start=20)

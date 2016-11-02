@@ -62,6 +62,11 @@ public:
       {
             return data.size() == fifo_size;
       }
+
+      void clear()
+      {
+            data.clear();
+      }
 };
 
 #endif

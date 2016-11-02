@@ -113,8 +113,9 @@ void cpu::stepCPU()
       {
       	// set BD
             SCC.data_reg[scc::CAUSE].writeBits(branch_delay, 31, 1);
-      	// set CE
-      	SCC.data_reg[scc::CAUSE].writeBits(coproc(), 28, 2);
+      	// set CE if exception was coprocessor unusable
+            if (e.execode() == 11)
+      	      SCC.data_reg[scc::CAUSE].writeBits(coproc(), 28, 2);
       	// set IP
       	// set SW
       	// set EXECODE
@@ -703,6 +704,8 @@ void cpu::BREAK()
 void cpu::LWCz()
 {
 	word address = source() + imm();
+      if (address % 4)
+            throw adelException();
 	word data = memory->readWord(address);
 	cop[coproc()]->writeDataReg(data, target_val());
 }
@@ -710,6 +713,8 @@ void cpu::LWCz()
 void cpu::SWCz()
 {
 	word address = source() + imm();
+      if (address % 4)
+            throw adesException();
       word data = cop[coproc()]->readDataReg(target_val());
 	memory->writeWord(address, data);
 }

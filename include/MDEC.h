@@ -11,27 +11,8 @@
 // includes
 #include <DMA.h>
 #include <FIFO.h>
-
-
-class mdecBlock
-{
-      halfword data;
-
-public:
-      halfword readLEN()
-      {
-            return data >> 10;
-      }
-      s_halfword readAC()
-      {
-            return s_halfword(data & 0x3FF);
-      }
-
-      void write(halfword in)
-      {
-            data = in;
-      }
-};
+#include <vector>
+#include <array>
 
 
 class mdec : public dmaDevice, public memoryInterface
@@ -49,29 +30,39 @@ class mdec : public dmaDevice, public memoryInterface
                   unsigned data_output_bit_15 : 1;
                   unsigned : 4;
                   unsigned current_block : 3;
-                  unsigned param_words_remaining : 16;
+                  unsigned par_words_rem : 16;
             } bit_fields;
             word data_field;
       } status_reg;
 
-      unsigned opcode;
-
       // data FIFOs
-      FIFOImpl<word> in_data_buffer;
-      FIFOImpl<word> out_data_buffer;
+      FIFOImpl<halfword> data_in_fifo;
+      FIFOImpl<halfword> data_out_fifo;
+
+      // internal data
+      std::array<s_halfword, 64> decoded_cr;
+      std::array<s_halfword, 64> decoded_cb;
+      std::array<s_halfword, 64> decoded_y;
 
       // tables
-      halfword lum_quant_table[64];
-      halfword color_quant_table[64];
-      halfword scale_table[64];
+
+      std::array<byte, 64> lum_quant_table;
+      std::array<byte, 64> color_quant_table;
+      std::array<halfword, 64> scale_table;
 
       // TODO: scale factor (?)
 
+      // internal status
+      unsigned opcode;
+      bool command_executed;
+
 public:
       // constructor
+      mdec();
 
       // 0x1F801820 (mem address)
-      void executeCommand(mdecBlock data);
+      void setupCommand(word command);
+      void executeCommand(word parameter);
       word readData();
 
       // 0x1F801824 (mem address)
@@ -89,14 +80,17 @@ public:
 private:
       // internal decoding functions:
 
-      // decodes a single macroblock.
-      void decodeColoredMacroblock();
-      void decodeMonochromeMacroblock();
+      // decodes a single block
+      void decodeBlock();
 
+      // inverse discrete cosine transform
+      //void fast_idct(std::array<word, 64>& decoded_block);
+      void idct(std::array<word, 64>& decoded_block);
+      
       // conversions between colour spaces
-      void yuvToRgb(mdecBlock* dataBlocks);
-      void yToMono(mdecBlock* dataBlocks);
-
+      //void yuvToRGB15();
+      //void yuvToRGB24();
+      void yToMono8();
 };
 
 
