@@ -10,7 +10,7 @@ testall : testcpu testgte
 
 testcpu : \
 test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4 test/cpu/bin/ADD_5 test/cpu/bin/ADD_6 \
-test/cpu/bin/SUB_1 test/cpu/bin/SUB_2 test/cpu/bin/SUB_3 test/cpu/bin/SUB_4 \
+test/cpu/bin/SUB_1 test/cpu/bin/SUB_2 test/cpu/bin/SUB_3 test/cpu/bin/SUB_4 test/cpu/bin/SUB_5 \
 test/cpu/bin/SB_1 test/cpu/bin/SB_2 test/cpu/bin/SB_3 test/cpu/bin/SB_4 \
 test/cpu/bin/SW_1 test/cpu/bin/SW_2 test/cpu/bin/SW_3 \
 test/cpu/bin/MFCz_1 \
@@ -57,6 +57,9 @@ test/cpu/bin/SUB_3 : test/cpu/src/SUB_3.cpp $(TESTCPULINK)
 
 test/cpu/bin/SUB_4 : test/cpu/src/SUB_4.cpp $(TESTCPULINK)
 	$(CXX) $(CXXFLAGS) test/cpu/src/SUB_4.cpp $(TESTCPULINK) -o $@
+
+test/cpu/bin/SUB_5 : test/cpu/src/SUB_5.cpp $(TESTCPULINK)
+	$(CXX) $(CXXFLAGS) test/cpu/src/SUB_5.cpp $(TESTCPULINK) -o $@
 
 test/cpu/bin/SB_1 : test/cpu/src/SB_1.cpp $(TESTCPULINK)
 	$(CXX) $(CXXFLAGS) test/cpu/src/SB_1.cpp $(TESTCPULINK) -o $@
