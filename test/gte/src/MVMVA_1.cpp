@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 
       if (tester.getData(gte::MAC1) == (38 << 12) &&
           tester.getData(gte::MAC2) == (16 << 12) &&
-          tester.getData(gte::MAC3) == (-15 << 12) &&
+          tester.getData(gte::MAC3) == (unsigned(-15) << 12) &&
           tester.getData(gte::IR1) == (0x7FFF) &&
           tester.getData(gte::IR2) == (0x7FFF) &&
           tester.getData(gte::IR3) == (0x0000) &&

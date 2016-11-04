@@ -4,14 +4,13 @@ import subprocess
 import sys
 import os
 import re
-from collections import defaultdict
 
 #################################
 
 passes = {}
 fails = {}
 
-def test_pass(test):
+def test_pass(test, faildump):
     match = re.search('([a-zA-Z]+)_[0-9]+ (Pass|Fail)', test)
     
     if match == None:
@@ -26,8 +25,13 @@ def test_pass(test):
 
     if match.group(2) == 'Pass':
         passes[function] += 1
-    if match.group(2) == 'Fail':
+    elif match.group(2) == 'Fail':
         fails[function] += 1
+        test = test.replace('b\'', '', 1)
+        test = test.replace('\'', '', 1)
+        test = test.replace('\\n', '\n')
+        faildump.write("\n")
+        faildump.write(test)
 
 #####################################
 
@@ -42,10 +46,14 @@ def print_tests():
 def main(argv):
     testdir = argv[1] + '/bin/'
     tests = os.listdir(testdir)
+    faildump = open(argv[1] + 'fail.output', 'w')
     for element in tests:
         out = str(subprocess.check_output(testdir + element))
-        test_pass(out)
+        test_pass(out, faildump)
+    faildump.close()
+    faildump = open(argv[1] + 'fail.output', 'r')
     print_tests()
+    print(faildump.read())
 
 
 if __name__ == "__main__":

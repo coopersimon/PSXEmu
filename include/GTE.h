@@ -156,27 +156,49 @@ private:
 	/*** INSTRUCTIONS ***/
       void RESERVED();
 
+      // perspective transform
       void RTPS();      //TODO
+      // perspective transform (x3)
       void RTPT();      //TODO
-      void MVMVA();     //TODO
+      // multiply vector by matrix and vector addition
+      void MVMVA();
+      // depth cue colour light
       void DCPL();
-      void DPCS();      //TODO
-      void DPCT();      //TODO
+      // depth cueing
+      void DPCS();      //TEST
+      // depth cueing (x3)
+      void DPCT();      //TEST
+      // interpolation of vector and far colour
       void INTPL();
+      // square vector
       void SQR();
+      // normal colour
       void NCS();       //TODO
+      // normal colour (x3)
       void NCT();       //TODO
+      // normal colour depth cue
       void NCDS();      //TODO
+      // normal colour depth cue (x3)
       void NCDT();      //TODO
+      // normal colour colour
       void NCCS();      //TODO
+      // normal colour colour (x3)
       void NCCT();      //TODO
+      // colour depth cue
       void CDP();       //TODO
+      // colour colour
       void CC();
+      // normal clipping
       void NCLIP();
+      // average of 3 z values
       void AVSZ3();     //TODO
+      // average of 4 z values
       void AVSZ4();     //TODO
+      // outer product
       void OP();        //TODO
+      // general purpose interpolation
       void GPF();       //TODO
+      // general purpose interpolation and addition
       void GPL();       //TODO
 
 public:

@@ -412,10 +412,113 @@ void gte::DCPL()
 
 void gte::DPCS()
 {
+      /***** INPUTS *****/
+      fixedPoint ir0(data_reg[IR0].readLowerHalfword(), 12);
+
+      fixedPoint rfc(control_reg[RFC].read(), 4);
+      fixedPoint gfc(control_reg[GFC].read(), 4);
+      fixedPoint bfc(control_reg[BFC].read(), 4);
+      
+      fixedPoint r(data_reg[RGB].readByte0(), 0, false);
+      fixedPoint g(data_reg[RGB].readByte1(), 0, false);
+      fixedPoint b(data_reg[RGB].readByte2(), 0, false);
+      
+      /***** CALCULATION *****/
+      fixedPoint intermediate = rfc - r;
+      B1(intermediate, 4);
+      fixedPoint mac1 = r + intermediate;
+
+      intermediate = gfc - g;
+      B2(intermediate, 4);
+      fixedPoint mac2 = g + intermediate;
+
+      intermediate = bfc - b;
+      B3(intermediate, 4);
+      fixedPoint mac3 = b + intermediate;
+
+      /***** OUTPUTS *****/
+      data_reg[MAC1].write(A1(mac1, 4));
+      data_reg[MAC2].write(A2(mac2, 4));
+      data_reg[MAC3].write(A3(mac3, 4));
+      data_reg[IR1].writeLowerHalfword(B1(mac1, 4));
+      data_reg[IR2].writeLowerHalfword(B2(mac2, 4));
+      data_reg[IR3].writeLowerHalfword(B3(mac3, 4));
+
+      word crgb = data_reg[RGB].readByte3() << 24;
+      crgb |= C1(mac1);
+      crgb |= C2(mac2) << 8;
+      crgb |= C3(mac3) << 16;
+
+      data_reg[RGB2].write(crgb);
 }
 
 void gte::DPCT()
 {
+      /***** INPUTS *****/
+      fixedPoint ir0(data_reg[IR0].readLowerHalfword(), 12);
+
+      fixedPoint rfc(control_reg[RFC].read(), 4);
+      fixedPoint gfc(control_reg[GFC].read(), 4);
+      fixedPoint bfc(control_reg[BFC].read(), 4);
+      
+      fixedPoint r;
+      fixedPoint g;
+      fixedPoint b;
+     
+      word crgb;
+
+      for (unsigned i = 0; i < 3; ++i)
+      {
+            /***** INPUT/OUTPUT CONSTRUCTION *****/
+            if (i == 0)
+            {
+                  r = fixedPoint(data_reg[RGB0].readByte0(), 0, false);
+                  g = fixedPoint(data_reg[RGB0].readByte1(), 0, false);
+                  b = fixedPoint(data_reg[RGB0].readByte2(), 0, false);
+                  crgb = data_reg[RGB].readByte3() << 24;
+            }
+            else if (i == 1)
+            {
+                  r = fixedPoint(data_reg[RGB1].readByte0(), 0, false);
+                  g = fixedPoint(data_reg[RGB1].readByte1(), 0, false);
+                  b = fixedPoint(data_reg[RGB1].readByte2(), 0, false);
+                  crgb = data_reg[RGB].readByte3() << 24;
+            }
+            else if (i == 2)
+            {
+                  r = fixedPoint(data_reg[RGB1].readByte0(), 0, false);
+                  g = fixedPoint(data_reg[RGB1].readByte1(), 0, false);
+                  b = fixedPoint(data_reg[RGB1].readByte2(), 0, false);
+                  crgb = data_reg[RGB].readByte3() << 24;
+            }
+            
+            /***** CALCULATION *****/
+            fixedPoint intermediate = rfc - r;
+            B1(intermediate, 4);
+            fixedPoint mac1 = r + intermediate;
+
+            intermediate = gfc - g;
+            B2(intermediate, 4);
+            fixedPoint mac2 = g + intermediate;
+
+            intermediate = bfc - b;
+            B3(intermediate, 4);
+            fixedPoint mac3 = b + intermediate;
+
+            /***** OUTPUTS *****/
+            data_reg[MAC1].write(A1(mac1, 4));
+            data_reg[MAC2].write(A2(mac2, 4));
+            data_reg[MAC3].write(A3(mac3, 4));
+            data_reg[IR1].writeLowerHalfword(B1(mac1, 4));
+            data_reg[IR2].writeLowerHalfword(B2(mac2, 4));
+            data_reg[IR3].writeLowerHalfword(B3(mac3, 4));
+
+            crgb |= C1(mac1);
+            crgb |= C2(mac2) << 8;
+            crgb |= C3(mac3) << 16;
+
+            data_reg[RGB2].write(crgb);
+      }
 }
 
 void gte::INTPL()
@@ -462,47 +565,29 @@ void gte::INTPL()
 
 void gte::SQR()
 {
+      unsigned fraction;
       if (shiftFraction())
-      {
-            /***** INPUTS *****/
-            fixedPoint ir1(data_reg[IR1].readLowerHalfword(), 12);
-            fixedPoint ir2(data_reg[IR2].readLowerHalfword(), 12);
-            fixedPoint ir3(data_reg[IR3].readLowerHalfword(), 12);
-
-            /***** CALCULATION *****/
-            fixedPoint mac1 = ir1 * ir1;
-            fixedPoint mac2 = ir2 * ir2;
-            fixedPoint mac3 = ir3 * ir3;
-
-            /***** OUTPUTS *****/
-            data_reg[MAC1].write(A1(mac1, 12));
-            data_reg[MAC2].write(A2(mac2, 12));
-            data_reg[MAC3].write(A3(mac3, 12));
-            data_reg[IR1].writeLowerHalfword(B1(mac1, 12));
-            data_reg[IR2].writeLowerHalfword(B2(mac2, 12));
-            data_reg[IR3].writeLowerHalfword(B3(mac3, 12));
-      }
-
+            fraction = 12;
       else
-      {
-            /***** INPUTS *****/
-            fixedPoint ir1(data_reg[IR1].readLowerHalfword(), 0);
-            fixedPoint ir2(data_reg[IR2].readLowerHalfword(), 0);
-            fixedPoint ir3(data_reg[IR3].readLowerHalfword(), 0);
-            
-            /***** CALCULATION *****/
-            fixedPoint mac1 = ir1 * ir1;
-            fixedPoint mac2 = ir2 * ir2;
-            fixedPoint mac3 = ir3 * ir3;
+            fraction = 0;
+      
+      /***** INPUTS *****/
+      fixedPoint ir1(data_reg[IR1].readLowerHalfword(), fraction);
+      fixedPoint ir2(data_reg[IR2].readLowerHalfword(), fraction);
+      fixedPoint ir3(data_reg[IR3].readLowerHalfword(), fraction);
 
-            /***** OUTPUTS *****/
-            data_reg[MAC1].write(A1(mac1, 0));
-            data_reg[MAC2].write(A2(mac2, 0));
-            data_reg[MAC3].write(A3(mac3, 0));
-            data_reg[IR1].writeLowerHalfword(B1(mac1, 0));
-            data_reg[IR2].writeLowerHalfword(B2(mac2, 0));
-            data_reg[IR3].writeLowerHalfword(B3(mac3, 0));
-      }
+      /***** CALCULATION *****/
+      fixedPoint mac1 = ir1 * ir1;
+      fixedPoint mac2 = ir2 * ir2;
+      fixedPoint mac3 = ir3 * ir3;
+
+      /***** OUTPUTS *****/
+      data_reg[MAC1].write(A1(mac1, fraction));
+      data_reg[MAC2].write(A2(mac2, fraction));
+      data_reg[MAC3].write(A3(mac3, fraction));
+      data_reg[IR1].writeLowerHalfword(B1(mac1, fraction));
+      data_reg[IR2].writeLowerHalfword(B2(mac2, fraction));
+      data_reg[IR3].writeLowerHalfword(B3(mac3, fraction));
 }
 
 void gte::NCS()

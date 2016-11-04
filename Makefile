@@ -18,10 +18,11 @@ test/cpu/bin/MTCz_1
 
 testgte : \
 test/gte/bin/DCPL_1 test/gte/bin/DCPL_2 test/gte/bin/DCPL_3 \
-test/gte/bin/SQR_1 \
-test/gte/bin/INTPL_1 \
+test/gte/bin/SQR_1 test/gte/bin/SQR_2 test/gte/bin/SQR_3 test/gte/bin/SQR_4 \
+test/gte/bin/INTPL_1 test/gte/bin/INTPL_2 \
 test/gte/bin/NCLIP_1 \
-test/gte/bin/MVMVA_1 test/gte/bin/MVMVA_2 test/gte/bin/MVMVA_3
+test/gte/bin/MVMVA_1 test/gte/bin/MVMVA_2 test/gte/bin/MVMVA_3 \
+test/gte/bin/CC_1
 
 
 # TEST CPU
@@ -105,8 +106,20 @@ test/gte/bin/DCPL_3 : test/gte/src/DCPL_3.cpp $(TESTGTELINK)
 test/gte/bin/SQR_1 : test/gte/src/SQR_1.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/SQR_1.cpp $(TESTGTELINK) -o $@
 
+test/gte/bin/SQR_2 : test/gte/src/SQR_2.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/SQR_2.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/SQR_3 : test/gte/src/SQR_3.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/SQR_3.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/SQR_4 : test/gte/src/SQR_4.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/SQR_4.cpp $(TESTGTELINK) -o $@
+
 test/gte/bin/INTPL_1 : test/gte/src/INTPL_1.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/INTPL_1.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/INTPL_2 : test/gte/src/INTPL_2.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/INTPL_2.cpp $(TESTGTELINK) -o $@
 
 test/gte/bin/NCLIP_1 : test/gte/src/NCLIP_1.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/NCLIP_1.cpp $(TESTGTELINK) -o $@
@@ -119,6 +132,9 @@ test/gte/bin/MVMVA_2 : test/gte/src/MVMVA_2.cpp $(TESTGTELINK)
 
 test/gte/bin/MVMVA_3 : test/gte/src/MVMVA_3.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/MVMVA_3.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/CC_1 : test/gte/src/CC_1.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/CC_1.cpp $(TESTGTELINK) -o $@
 
 
 # OBJECT FILES
