@@ -48,7 +48,8 @@ class memoryInterface
 {
 public:
       virtual ~memoryInterface() {}
-      
+
+      // virtual word checkWord(unsigned address) {return readWord(address)}; // for writing bytes/halfwords, ensuring data doesnt get destroyed
       virtual word readWord(unsigned address) = 0;
       virtual void writeWord(unsigned address, word in) = 0;
 };

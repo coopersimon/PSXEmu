@@ -165,17 +165,17 @@ private:
       // depth cue colour light
       void DCPL();
       // depth cueing
-      void DPCS();      //TEST
+      void DPCS();
       // depth cueing (x3)
-      void DPCT();      //TEST
+      void DPCT();
       // interpolation of vector and far colour
       void INTPL();
       // square vector
       void SQR();
       // normal colour
-      void NCS();       //TODO
+      void NCS();       //TEST
       // normal colour (x3)
-      void NCT();       //TODO
+      void NCT();       //TEST
       // normal colour depth cue
       void NCDS();      //TODO
       // normal colour depth cue (x3)

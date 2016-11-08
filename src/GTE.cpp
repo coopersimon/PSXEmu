@@ -350,12 +350,12 @@ void gte::MVMVA()
       fixedPoint mac3 = cvz + (mx31 * vx) + (mx32 * vy) + (mx33 * vz);
 
       /***** OUTPUTS *****/
-      data_reg[MAC1].write(A1(mac1, 12));
-      data_reg[MAC2].write(A2(mac2, 12));
-      data_reg[MAC3].write(A3(mac3, 12));
-      data_reg[IR1].writeLowerHalfword(B1(mac1, 12));
-      data_reg[IR2].writeLowerHalfword(B2(mac2, 12));
-      data_reg[IR3].writeLowerHalfword(B3(mac3, 12));
+      data_reg[MAC1].write(A1(mac1, 4));
+      data_reg[MAC2].write(A2(mac2, 4));
+      data_reg[MAC3].write(A3(mac3, 4));
+      data_reg[IR1].writeLowerHalfword(B1(mac1, 4));
+      data_reg[IR2].writeLowerHalfword(B2(mac2, 4));
+      data_reg[IR3].writeLowerHalfword(B3(mac3, 4));
 }
 
 void gte::DCPL()
@@ -426,15 +426,15 @@ void gte::DPCS()
       /***** CALCULATION *****/
       fixedPoint intermediate = rfc - r;
       B1(intermediate, 4);
-      fixedPoint mac1 = r + intermediate;
+      fixedPoint mac1 = r + (ir0 * intermediate);
 
       intermediate = gfc - g;
       B2(intermediate, 4);
-      fixedPoint mac2 = g + intermediate;
+      fixedPoint mac2 = g + (ir0 * intermediate);
 
       intermediate = bfc - b;
       B3(intermediate, 4);
-      fixedPoint mac3 = b + intermediate;
+      fixedPoint mac3 = b + (ir0 * intermediate);
 
       /***** OUTPUTS *****/
       data_reg[MAC1].write(A1(mac1, 4));
@@ -464,46 +464,26 @@ void gte::DPCT()
       fixedPoint r;
       fixedPoint g;
       fixedPoint b;
-     
-      word crgb;
 
       for (unsigned i = 0; i < 3; ++i)
       {
-            /***** INPUT/OUTPUT CONSTRUCTION *****/
-            if (i == 0)
-            {
-                  r = fixedPoint(data_reg[RGB0].readByte0(), 0, false);
-                  g = fixedPoint(data_reg[RGB0].readByte1(), 0, false);
-                  b = fixedPoint(data_reg[RGB0].readByte2(), 0, false);
-                  crgb = data_reg[RGB].readByte3() << 24;
-            }
-            else if (i == 1)
-            {
-                  r = fixedPoint(data_reg[RGB1].readByte0(), 0, false);
-                  g = fixedPoint(data_reg[RGB1].readByte1(), 0, false);
-                  b = fixedPoint(data_reg[RGB1].readByte2(), 0, false);
-                  crgb = data_reg[RGB].readByte3() << 24;
-            }
-            else if (i == 2)
-            {
-                  r = fixedPoint(data_reg[RGB1].readByte0(), 0, false);
-                  g = fixedPoint(data_reg[RGB1].readByte1(), 0, false);
-                  b = fixedPoint(data_reg[RGB1].readByte2(), 0, false);
-                  crgb = data_reg[RGB].readByte3() << 24;
-            }
+            /***** INPUT CONSTRUCTION *****/
+            r = fixedPoint(data_reg[RGB0].readByte0(), 0, false);
+            g = fixedPoint(data_reg[RGB0].readByte1(), 0, false);
+            b = fixedPoint(data_reg[RGB0].readByte2(), 0, false);
             
             /***** CALCULATION *****/
             fixedPoint intermediate = rfc - r;
             B1(intermediate, 4);
-            fixedPoint mac1 = r + intermediate;
+            fixedPoint mac1 = r + (ir0 * intermediate);
 
             intermediate = gfc - g;
             B2(intermediate, 4);
-            fixedPoint mac2 = g + intermediate;
+            fixedPoint mac2 = g + (ir0 * intermediate);
 
             intermediate = bfc - b;
             B3(intermediate, 4);
-            fixedPoint mac3 = b + intermediate;
+            fixedPoint mac3 = b + (ir0 * intermediate);
 
             /***** OUTPUTS *****/
             data_reg[MAC1].write(A1(mac1, 4));
@@ -513,6 +493,7 @@ void gte::DPCT()
             data_reg[IR2].writeLowerHalfword(B2(mac2, 4));
             data_reg[IR3].writeLowerHalfword(B3(mac3, 4));
 
+            word crgb = data_reg[RGB].readByte3() << 24;
             crgb |= C1(mac1);
             crgb |= C2(mac2) << 8;
             crgb |= C3(mac3) << 16;
@@ -592,10 +573,161 @@ void gte::SQR()
 
 void gte::NCS()
 {
+      /***** INPUTS *****/
+      fixedPoint l11(control_reg[L11L12].readLowerHalfword(), 12);
+      fixedPoint l12(control_reg[L11L12].readUpperHalfword(), 12);
+      fixedPoint l13(control_reg[L13L21].readLowerHalfword(), 12);
+      fixedPoint l21(control_reg[L13L21].readUpperHalfword(), 12);
+      fixedPoint l22(control_reg[L22L23].readLowerHalfword(), 12);
+      fixedPoint l23(control_reg[L22L23].readUpperHalfword(), 12);
+      fixedPoint l31(control_reg[L31L32].readLowerHalfword(), 12);
+      fixedPoint l32(control_reg[L31L32].readUpperHalfword(), 12);
+      fixedPoint l33(control_reg[L33].readLowerHalfword(), 12);
+
+      fixedPoint vx0(data_reg[VXY0].readLowerHalfword(), 12);
+      fixedPoint vy0(data_reg[VXY0].readUpperHalfword(), 12);
+      fixedPoint vz0(data_reg[VZ0].readLowerHalfword(), 12);
+
+      fixedPoint lr1(control_reg[LR1LR2].readLowerHalfword(), 12);
+      fixedPoint lr2(control_reg[LR1LR2].readUpperHalfword(), 12);
+      fixedPoint lr3(control_reg[LR3LG1].readLowerHalfword(), 12);
+      fixedPoint lg1(control_reg[LR3LG1].readUpperHalfword(), 12);
+      fixedPoint lg2(control_reg[LG2LG3].readLowerHalfword(), 12);
+      fixedPoint lg3(control_reg[LG2LG3].readUpperHalfword(), 12);
+      fixedPoint lb1(control_reg[LB1LB2].readLowerHalfword(), 12);
+      fixedPoint lb2(control_reg[LB1LB2].readUpperHalfword(), 12);
+      fixedPoint lb3(control_reg[LB3].readLowerHalfword(), 12);
+
+      fixedPoint ir1(data_reg[IR1].readLowerHalfword(), 12);
+      fixedPoint ir2(data_reg[IR2].readLowerHalfword(), 12);
+      fixedPoint ir3(data_reg[IR3].readLowerHalfword(), 12);
+
+      fixedPoint rbk(control_reg[RBK].read(), 12);
+      fixedPoint gbk(control_reg[GBK].read(), 12);
+      fixedPoint bbk(control_reg[BBK].read(), 12);
+
+      /***** CALCULATION *****/
+      fixedPoint mac1 = (l11 * vx0) + (l12 * vy0) + (l13 * vz0);
+      fixedPoint mac2 = (l21 * vx0) + (l22 * vy0) + (l23 * vz0);
+      fixedPoint mac3 = (l31 * vx0) + (l32 * vy0) + (l33 * vz0);
+
+      A1(mac1, 12);
+      A2(mac2, 12);
+      A3(mac3, 12);
+
+      B1(mac1, 12);
+      B2(mac2, 12);
+      B3(mac3, 12);
+
+      mac1 = rbk + (lr1 * mac1) + (lr2 * mac2) + (lr3 * mac3);
+      mac2 = gbk + (lg1 * mac1) + (lg2 * mac2) + (lg3 * mac3);
+      mac3 = bbk + (lb1 * mac1) + (lb2 * mac2) + (lb3 * mac3);
+
+      /***** OUTPUTS *****/
+      data_reg[MAC1].write(A1(mac1, 4));
+      data_reg[MAC2].write(A2(mac2, 4));
+      data_reg[MAC3].write(A3(mac3, 4));
+      data_reg[IR1].writeLowerHalfword(B1(mac1, 4));
+      data_reg[IR2].writeLowerHalfword(B2(mac2, 4));
+      data_reg[IR3].writeLowerHalfword(B3(mac3, 4));
+
+      word crgb = data_reg[RGB].readByte3() << 24;
+      crgb |= C1(mac1);
+      crgb |= C2(mac2) << 8;
+      crgb |= C3(mac3) << 16;
+
+      data_reg[RGB2].write(crgb);
 }
 
 void gte::NCT()
 {
+      /***** INPUTS *****/
+      fixedPoint l11(control_reg[L11L12].readLowerHalfword(), 12);
+      fixedPoint l12(control_reg[L11L12].readUpperHalfword(), 12);
+      fixedPoint l13(control_reg[L13L21].readLowerHalfword(), 12);
+      fixedPoint l21(control_reg[L13L21].readUpperHalfword(), 12);
+      fixedPoint l22(control_reg[L22L23].readLowerHalfword(), 12);
+      fixedPoint l23(control_reg[L22L23].readUpperHalfword(), 12);
+      fixedPoint l31(control_reg[L31L32].readLowerHalfword(), 12);
+      fixedPoint l32(control_reg[L31L32].readUpperHalfword(), 12);
+      fixedPoint l33(control_reg[L33].readLowerHalfword(), 12);
+
+      fixedPoint vx;
+      fixedPoint vy;
+      fixedPoint vz;
+
+      fixedPoint lr1(control_reg[LR1LR2].readLowerHalfword(), 12);
+      fixedPoint lr2(control_reg[LR1LR2].readUpperHalfword(), 12);
+      fixedPoint lr3(control_reg[LR3LG1].readLowerHalfword(), 12);
+      fixedPoint lg1(control_reg[LR3LG1].readUpperHalfword(), 12);
+      fixedPoint lg2(control_reg[LG2LG3].readLowerHalfword(), 12);
+      fixedPoint lg3(control_reg[LG2LG3].readUpperHalfword(), 12);
+      fixedPoint lb1(control_reg[LB1LB2].readLowerHalfword(), 12);
+      fixedPoint lb2(control_reg[LB1LB2].readUpperHalfword(), 12);
+      fixedPoint lb3(control_reg[LB3].readLowerHalfword(), 12);
+
+      fixedPoint ir1(data_reg[IR1].readLowerHalfword(), 12);
+      fixedPoint ir2(data_reg[IR2].readLowerHalfword(), 12);
+      fixedPoint ir3(data_reg[IR3].readLowerHalfword(), 12);
+
+      fixedPoint rbk(control_reg[RBK].read(), 12);
+      fixedPoint gbk(control_reg[GBK].read(), 12);
+      fixedPoint bbk(control_reg[BBK].read(), 12);
+
+      for (unsigned i = 0; i < 3; ++i)
+      {
+            /***** INPUT CONSTRUCTION *****/
+            if (i == 0)
+            {
+                  vx = fixedPoint(data_reg[VXY0].readLowerHalfword(), 12);
+                  vy = fixedPoint(data_reg[VXY0].readUpperHalfword(), 12);
+                  vz = fixedPoint(data_reg[VZ0].readLowerHalfword(), 12);
+            }
+            else if (i == 1)
+            {
+                  vx = fixedPoint(data_reg[VXY1].readLowerHalfword(), 12);
+                  vy = fixedPoint(data_reg[VXY1].readUpperHalfword(), 12);
+                  vz = fixedPoint(data_reg[VZ1].readLowerHalfword(), 12);
+            }
+            else if (i == 2)
+            {
+                  vx = fixedPoint(data_reg[VXY2].readLowerHalfword(), 12);
+                  vy = fixedPoint(data_reg[VXY2].readUpperHalfword(), 12);
+                  vz = fixedPoint(data_reg[VZ2].readLowerHalfword(), 12);
+            }
+
+            /***** CALCULATION *****/
+            fixedPoint mac1 = (l11 * vx) + (l12 * vy) + (l13 * vz);
+            fixedPoint mac2 = (l21 * vx) + (l22 * vy) + (l23 * vz);
+            fixedPoint mac3 = (l31 * vx) + (l32 * vy) + (l33 * vz);
+
+            A1(mac1, 12);
+            A2(mac2, 12);
+            A3(mac3, 12);
+
+            B1(mac1, 12);
+            B2(mac2, 12);
+            B3(mac3, 12);
+
+            mac1 = rbk + (lr1 * mac1) + (lr2 * mac2) + (lr3 * mac3);
+            mac2 = gbk + (lg1 * mac1) + (lg2 * mac2) + (lg3 * mac3);
+            mac3 = bbk + (lb1 * mac1) + (lb2 * mac2) + (lb3 * mac3);
+      
+            /***** OUTPUTS *****/
+            data_reg[MAC1].write(A1(mac1, 4));
+            data_reg[MAC2].write(A2(mac2, 4));
+            data_reg[MAC3].write(A3(mac3, 4));
+            data_reg[IR1].writeLowerHalfword(B1(mac1, 4));
+            data_reg[IR2].writeLowerHalfword(B2(mac2, 4));
+            data_reg[IR3].writeLowerHalfword(B3(mac3, 4));
+
+            word crgb = data_reg[RGB].readByte3() << 24;
+            crgb |= C1(mac1);
+            crgb |= C2(mac2) << 8;
+            crgb |= C3(mac3) << 16;
+
+            data_reg[RGB2].write(crgb);
+      }
 }
 
 void gte::NCDS()

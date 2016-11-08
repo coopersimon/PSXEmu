@@ -29,19 +29,19 @@ int main(int argc, char **argv)
        *  Mac 2 = 3 * 2 + 2 * 3 + 1 * 4   = 16
        *  Mac 3 = -5 * 2 + 5 * 3 + -5 * 4 = -15
        *
-       *  IR1,2,3 = Mac1,2,3
-       *
+       *  IR1,2 = Mac1,2
+       *  IR3 = 0 (saturated)
        */
 
       tester.run();
 
-      if (tester.getData(gte::MAC1) == (38 << 12) &&
-          tester.getData(gte::MAC2) == (16 << 12) &&
-          tester.getData(gte::MAC3) == (unsigned(-15) << 12) &&
-          tester.getData(gte::IR1) == (0x7FFF) &&
-          tester.getData(gte::IR2) == (0x7FFF) &&
-          tester.getData(gte::IR3) == (0x0000) &&
-          tester.getControl(gte::FLAG) == 0x81c00000)
+      if (tester.getData(gte::MAC1) == (38 << 4) &&
+          tester.getData(gte::MAC2) == (16 << 4) &&
+          tester.getData(gte::MAC3) == (unsigned(-15) << 4) &&
+          tester.getData(gte::IR1) == (38 << 4) &&
+          tester.getData(gte::IR2) == (16 << 4) &&
+          tester.getData(gte::IR3) == (0) &&
+          tester.getControl(gte::FLAG) == 0x80400000)
             std::cout << argv[0] << " Pass" << std::endl;
       else
       {

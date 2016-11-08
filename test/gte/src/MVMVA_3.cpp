@@ -35,13 +35,13 @@ int main(int argc, char **argv)
 
       tester.run();
 
-      if (tester.getData(gte::MAC1) == (17 << 12) &&
-          tester.getData(gte::MAC2) == (20 << 12) &&
-          tester.getData(gte::MAC3) == ((14 << 12) + (1 << 11)) &&
-          tester.getData(gte::IR1) == (0x7FFF) &&
-          tester.getData(gte::IR2) == (0x7FFF) &&
-          tester.getData(gte::IR3) == (0x7FFF) &&
-          tester.getControl(gte::FLAG) == 0x81C00000)
+      if (tester.getData(gte::MAC1) == (17 << 4) &&
+          tester.getData(gte::MAC2) == (20 << 4) &&
+          tester.getData(gte::MAC3) == ((14 << 4) + (1 << 3)) &&
+          tester.getData(gte::IR1) == (17 << 4) &&
+          tester.getData(gte::IR2) == (20 << 4) &&
+          tester.getData(gte::IR3) == ((14 << 4) + (1 << 3)) &&
+          tester.getControl(gte::FLAG) == 0x00000000)
             std::cout << argv[0] << " Pass" << std::endl;
       else
       {
