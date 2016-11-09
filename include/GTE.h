@@ -177,29 +177,29 @@ private:
       // normal colour (x3)
       void NCT();       //TEST
       // normal colour depth cue
-      void NCDS();      //TODO
+      void NCDS();      //TEST
       // normal colour depth cue (x3)
-      void NCDT();      //TODO
+      void NCDT();      //TEST
       // normal colour colour
-      void NCCS();      //TODO
+      void NCCS();      //TEST
       // normal colour colour (x3)
-      void NCCT();      //TODO
+      void NCCT();      //TEST
       // colour depth cue
-      void CDP();       //TODO
+      void CDP();       //TEST
       // colour colour
       void CC();
       // normal clipping
       void NCLIP();
       // average of 3 z values
-      void AVSZ3();     //TODO
+      void AVSZ3();     //TEST
       // average of 4 z values
-      void AVSZ4();     //TODO
+      void AVSZ4();     //TEST
       // outer product
-      void OP();        //TODO
+      void OP();        //TEST
       // general purpose interpolation
-      void GPF();       //TODO
+      void GPF();       //TEST
       // general purpose interpolation and addition
-      void GPL();       //TODO
+      void GPL();       //TEST
 
 public:
 

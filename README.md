@@ -1,9 +1,9 @@
 # TODO:
 
 * GTE instructions
-* Fixed point needs (minor) refinement
+* Fixed point and repeating sections of GTE instructions need refinement
 * CPU Tests
-* GTE Tests (will write with instructions)
+* GTE Tests
 * GPU and window interface
 * MDEC needs finishing
 * DMA needs testing

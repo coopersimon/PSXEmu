@@ -61,16 +61,16 @@ void mdec::setupCommand(word command)
       opcode = (command >> 29) & 0x7;
 
       // set parameters
-      status_reg.bit_fields.data_output_depth = (command >> 27) & 0x3;
-      status_reg.bit_fields.data_output_signed = (command >> 26) & 0x1;
-      status_reg.bit_fields.data_output_bit_15 = (command >> 25) & 0x1;
+      data_output_depth = (command >> 27) & 0x3;
+      data_output_signed = (command >> 26) & 0x1;
+      data_output_bit_15 = (command >> 25) & 0x1;
 
       // decode
       if (opcode == 1)
       {
-            status_reg.bit_fields.command_busy = 1;
-            status_reg.bit_fields.current_block = 0;
-            status_reg.bit_fields.par_words_rem = (command & 0xFFFF) - 1;
+            command_busy = 1;
+            current_block = 0;
+            par_words_rem = (command & 0xFFFF) - 1;
 
             command_executed = false;
       }
@@ -78,24 +78,24 @@ void mdec::setupCommand(word command)
       // set quant table
       else if (opcode == 2)
       {
-            status_reg.bit_fields.command_busy = 1;
+            command_busy = 1;
 
             // set luminance and colour tables
             if (command & 0x1)
             {
                   opcode = 4;
-                  status_reg.bit_fields.par_words_rem = 127;
+                  par_words_rem = 127;
             }
             // set only luminance table
             else
-                  status_reg.bit_fields.par_words_rem = 63;
+                  par_words_rem = 63;
       }
 
       // set scale table
       else if (opcode == 3)
       {
-            status_reg.bit_fields.command_busy = 1;
-            status_reg.bit_fields.par_words_rem = 63;
+            command_busy = 1;
+            par_words_rem = 63;
       }
 
       // invalid instruction
@@ -129,13 +129,13 @@ void mdec::executeCommand(word parameter)
                   decodeBlock();
                   
                   // monochrome: depth = 4 or 8 bit
-                  if (status_reg.bit_fields.data_output_depth == 0 ||
-                      status_reg.bit_fields.data_output_depth == 1)
+                  if (data_output_depth == 0 ||
+                      data_output_depth == 1)
                   {
                         yToMono();
                   }
                   // colour: depth = 15 or 24 bit
-                  else if(status_reg.bit_fields.current_block > 1)
+                  else if(current_block > 1)
                   {
                         yuvToRGB();
                   }
@@ -171,10 +171,10 @@ void mdec::executeCommand(word parameter)
       status_reg.bit_fields.par_words_rem--;
       
       // end execution
-      if (status_reg.bit_fields.par_words_rem == 0xFFFF)
+      if (par_words_rem == 0xFFFF)
       {
             opcode = 0;
-            status_reg.bit_fields.command_busy = 0;
+            command_busy = 0;
       }
 }
 
@@ -190,31 +190,43 @@ void mdec::setControl(word command)
       {
             // reset.
       }
-      status_reg.bit_fields.data_in_request = (command >> 30) & 0x1;
-      status_reg.bit_fields.data_out_request = (command >> 29) & 0x1;
+      data_in_request = (command >> 30) & 0x1;
+      data_out_request = (command >> 29) & 0x1;
 }
 
 word readStatusReg()
 {
-      return status_reg.data_field;
+      word status_reg = 0;
+      status_reg |= (data_out_fifo_empty & 0x1) << 31;
+      status_reg |= (data_in_fifo_full & 0x1) << 30;
+      status_reg |= (command_busy & 0x1) << 29;
+      status_reg |= (data_in_request & 0x1) << 28;
+      status_reg |= (data_out_request & 0x1) << 27;
+      status_reg |= (data_output_depth & 0x3) << 25;
+      status_reg |= (data_output_signed & 0x1) << 24;
+      status_reg |= (data_output_bit_15 & 0x1) << 23;
+      status_reg |= (current_block & 0x7) << 16;
+      status_reg |= (par_words_rem & 0xFFFF);
+
+      return status_reg;
 }
 
 // Decoding functions
 
 void mdec::decodeBlock()
 {
-      unsigned block = status_reg.bit_fields.current_block;
+      unsigned block = current_block;
       unsigned q_scale = 0xFFFFFFFF;
       unsigned k = 0;
 
       std::array<s_halfword, 64> result_block = {0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0,
-                                           0, 0, 0, 0, 0, 0, 0, 0};
+                                                 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0,
+                                                 0, 0, 0, 0, 0, 0, 0, 0};
 
       while (k < 64)
       {
@@ -222,9 +234,6 @@ void mdec::decodeBlock()
             // ignore padding
             if (data == 0xFE00)
                   continue;
-            // set q scale if necessary
-            if (q_scale == 0xFFFFFFFF)
-                  q_scale = (data >> 10) & 0x3F;
 
             // get data as signed value
             s_halfword value = (data << 6) >> 6;
@@ -240,6 +249,10 @@ void mdec::decodeBlock()
                   value *= lum_quant_table[k];
             else if (block > 1)
                   value *= (lum_quant_table[k] * q_scale + 4) / 8;
+            
+            // set q scale if necessary
+            if (q_scale == 0xFFFFFFFF)
+                  q_scale = (data >> 10) & 0x3F;
 
             // saturate value
             if (value > 1023)
@@ -339,7 +352,7 @@ void mdec::yToMono8()
             else if (Y < -128)
                   Y = -128;
 
-            if (!status_reg.bit_fields.data_output_signed)
+            if (!data_output_signed)
                   Y += 128;
 
             data_out_fifo.write(Y);
