@@ -72,7 +72,7 @@ void gte::executeInstruction(unsigned instruction_in)
 // something to think about in these functions
 word gte::A1(fixedPoint &input, unsigned fraction)
 {
-      bool set_bit = input.checkBits(43);
+      bool set_bit = input.checkOverflow(43);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 27, 1);
@@ -86,7 +86,7 @@ word gte::A1(fixedPoint &input, unsigned fraction)
 
 word gte::A2(fixedPoint &input, unsigned fraction)
 {
-      bool set_bit = input.checkBits(43);
+      bool set_bit = input.checkOverflow(43);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 26, 1);
@@ -100,7 +100,7 @@ word gte::A2(fixedPoint &input, unsigned fraction)
 
 word gte::A3(fixedPoint &input, unsigned fraction)
 {
-      bool set_bit = input.checkBits(43);
+      bool set_bit = input.checkOverflow(43);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 25, 1);
@@ -113,7 +113,7 @@ word gte::A3(fixedPoint &input, unsigned fraction)
 }
 
 // these should take in a word. needs lots of work.
-word gte::B1(fixedPoint &input, unsigned fraction)
+word gte::B1(fixedPoint input, unsigned fraction)
 {
       if (input.checkSaturation(0x7FFF, lm()))
       {
@@ -122,7 +122,7 @@ word gte::B1(fixedPoint &input, unsigned fraction)
       return input.getAsWord(16-fraction, fraction);
 }
 
-word gte::B2(fixedPoint &input, unsigned fraction)
+word gte::B2(fixedPoint input, unsigned fraction)
 {
       if (input.checkSaturation(0x7FFF, lm()))
       {
@@ -131,13 +131,107 @@ word gte::B2(fixedPoint &input, unsigned fraction)
       return input.getAsWord(16-fraction, fraction);
 }
 
-word gte::B3(fixedPoint &input, unsigned fraction)
+word gte::B3(fixedPoint input, unsigned fraction)
 {
       if (input.checkSaturation(0x7FFF, lm()))
       {
             control_reg[FLAG].writeBits(1, 22, 1);
       }
       return input.getAsWord(16-fraction, fraction);
+}
+
+fixedPoint gte::AB1(fixedPoint input)
+{
+      input.truncateFraction(12);
+      // A
+      bool set_bit = input.checkOverflow(43);
+      if (set_bit && input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 27, 1);
+      }
+      else if (set_bit && !input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 30, 1);
+      }
+      // B
+      if (input.checkSaturation(0x7FFF, lm()))
+      {
+            control_reg[FLAG].writeBits(1, 24, 1);
+      }
+      return input;
+}
+
+fixedPoint gte::AB2(fixedPoint input)
+{
+      input.truncateFraction(12);
+      // A
+      bool set_bit = input.checkOverflow(43);
+      if (set_bit && input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 26, 1);
+      }
+      else if (set_bit && !input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 29, 1);
+      }
+      // B
+      if (input.checkSaturation(0x7FFF, lm()))
+      {
+            control_reg[FLAG].writeBits(1, 23, 1);
+      }
+      return input;
+}
+
+fixedPoint gte::AB3(fixedPoint input)
+{
+      input.truncateFraction(12);
+      // A
+      bool set_bit = input.checkOverflow(43);
+      if (set_bit && input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 25, 1);
+      }
+      else if (set_bit && !input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 28, 1);
+      }
+      // B
+      if (input.checkSaturation(0x7FFF, lm()))
+      {
+            control_reg[FLAG].writeBits(1, 22, 1);
+      }
+      return input;
+}
+
+fixedPoint gte::fpB1(fixedPoint input)
+{
+      // TODO: really not sure about this truncation here.
+      input.truncateFraction(4);
+      if (input.checkSaturation(0x7FFF, lm()))
+      {
+            control_reg[FLAG].writeBits(1, 24, 1);
+      }
+      return input;
+}
+
+fixedPoint gte::fpB2(fixedPoint input)
+{
+      input.truncateFraction(4);
+      if (input.checkSaturation(0x7FFF, lm()))
+      {
+            control_reg[FLAG].writeBits(1, 23, 1);
+      }
+      return input;
+}
+
+fixedPoint gte::fpB3(fixedPoint input)
+{
+      input.truncateFraction(4);
+      if (input.checkSaturation(0x7FFF, lm()))
+      {
+            control_reg[FLAG].writeBits(1, 22, 1);
+      }
+      return input;
 }
 
 word gte::C1(fixedPoint &input)
@@ -186,7 +280,7 @@ word gte::D(fixedPoint &input)
 
 word gte::F(fixedPoint &input)
 {
-      bool set_bit = input.checkBits(31);
+      bool set_bit = input.checkOverflow(31);
       if (set_bit && input.checkSign())
       {
            control_reg[FLAG].writeBits(1, 15, 1);
@@ -198,8 +292,18 @@ word gte::F(fixedPoint &input)
       return input.getAsWord(32, 0);
 }
 
-word gte::G1(fixedPoint &input)
+word gte::G1F(fixedPoint &input)
 {
+      bool set_bit = input.checkOverflow(31);
+      if (set_bit && input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 15, 1);
+      }
+      else if (set_bit && !input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 16, 1);
+      }
+
       if (input.checkSaturation(0x3FF, false))
       {
             control_reg[FLAG].writeBits(1, 14, 1);
@@ -207,8 +311,18 @@ word gte::G1(fixedPoint &input)
       return input.getAsWord(16, 0);
 }
 
-word gte::G2(fixedPoint &input)
+word gte::G2F(fixedPoint &input)
 {
+      bool set_bit = input.checkOverflow(31);
+      if (set_bit && input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 15, 1);
+      }
+      else if (set_bit && !input.checkSign())
+      {
+           control_reg[FLAG].writeBits(1, 16, 1);
+      }
+
       if (input.checkSaturation(0x3FF, false))
       {
             control_reg[FLAG].writeBits(1, 13, 1);
@@ -216,14 +330,14 @@ word gte::G2(fixedPoint &input)
       return input.getAsWord(16, 0);
 }
 
-/*fixedPoint gte::Hx(fixedPoint &input)
+word gte::Hx(fixedPoint &input)
 {
       if (input.checkSaturation(0x1000, true))
       {
             control_reg[FLAG].writeBits(1, 12, 1);
       }
-      return input;
-}*/
+      return input.getAsWord(16, 0);
+}
 
 
 /***** INSTRUCTIONS *****/
@@ -236,12 +350,67 @@ void gte::RESERVED()
 
 void gte::RTPS()
 {
-     // lm = 0 
+      /***** INPUTS *****/
+      fixedPoint vx0(data_reg[VXY0].readLowerHalfword(), 0);
+      fixedPoint vy0(data_reg[VXY0].readUpperHalfword(), 0);
+      fixedPoint vz0(data_reg[VZ0].readLowerHalfword(), 0);
+
+      fixedPoint r11(control_reg[R11R12].readLowerHalfword(), 12);
+      fixedPoint r12(control_reg[R11R12].readUpperHalfword(), 12);
+      fixedPoint r13(control_reg[R13R21].readLowerHalfword(), 12);
+      fixedPoint r21(control_reg[R13R21].readUpperHalfword(), 12);
+      fixedPoint r22(control_reg[R22R23].readLowerHalfword(), 12);
+      fixedPoint r23(control_reg[R22R23].readUpperHalfword(), 12);
+      fixedPoint r31(control_reg[R31R32].readLowerHalfword(), 12);
+      fixedPoint r32(control_reg[R31R32].readUpperHalfword(), 12);
+      fixedPoint r33(control_reg[R33].readLowerHalfword(), 12);
+
+      fixedPoint trX(control_reg[TRX].read(), 0);
+      fixedPoint trY(control_reg[TRY].read(), 0);
+      fixedPoint trZ(control_reg[TRZ].read(), 0);
+
+      fixedPoint h(control_reg[H].readLowerHalfword(), 0);
+      
+      fixedPoint dqa(control_reg[DQA].readLowerHalfword(), 8);
+      fixedPoint dqb(control_reg[DQB].readLowerHalfword(), 8);
+
+      fixedPoint ofx(control_reg[OFX].read(), 16);
+      fixedPoint ofy(control_reg[OFY].read(), 16);
+
+      /***** CALCULATION *****/
+      fixedPoint mac1 = trX + (r11*vx0) + (r12*vy0) + (r13*vz0);
+      fixedPoint mac2 = trY + (r21*vx0) + (r22*vy0) + (r23*vz0);
+      fixedPoint mac3 = trZ + (r31*vx0) + (r32*vy0) + (r33*vz0);
+
+      /***** OUTPUTS *****/
+      data_reg[MAC1].write(A1(mac1, 0));
+      data_reg[MAC2].write(A2(mac2, 0));
+      data_reg[MAC3].write(A3(mac3, 0));
+      data_reg[IR1].writeLowerHalfword(B1(mac1, 0));
+      data_reg[IR2].writeLowerHalfword(B2(mac2, 0));
+      data_reg[IR3].writeLowerHalfword(B3(mac3, 0));
+      // TODO: B3 will change mac3, we need it unchanged for D
+      data_reg[SZ3].write(D(mac3));
+
+      /***** CALCULATION *****/
+      fixedPoint h_sz; //divide: h/mac3
+
+      fixedPoint sx = ofx + (mac1 * h_sz);
+      fixedPoint sy = ofy + (mac2 * h_sz);
+      fixedPoint mac0 = dqb + (dqa * h_sz);
+
+      /***** OUTPUTS *****/
+      data_reg[SXYP].write(0);
+      data_reg[SXYP].writeLowerHalfword(G1F(sx));
+      data_reg[SXYP].writeUpperHalfword(G2F(sy));
+
+      data_reg[MAC0].write(F(mac0));
+      data_reg[IR0].writeLowerHalfword(Hx(mac0));
 }
 
 void gte::RTPT()
 {
-     // lm = 0 
+      // lm = 0
 }
 
 void gte::MVMVA()
@@ -377,22 +546,16 @@ void gte::DCPL()
 
       /***** CALCULATION *****/
       fixedPoint rir = r * ir1; // rgbir: 11.12
-      rir.truncateFraction(4); // this shouldn't really be needed. subtraction might take care of it
       fixedPoint mid = rfc - rir; // mid: 27.4
-      B1(mid, 4); // ok this got uglier... TODO: maybe a different function is needed here?
-      fixedPoint mac1 = rir + (ir0 * mid);
+      fixedPoint mac1 = rir + (ir0 * fpB1(mid));
 
       fixedPoint gir = g * ir2;
-      gir.truncateFraction(4);
       mid = gfc - gir;
-      B2(mid, 4);
-      fixedPoint mac2 = gir + (ir0 * mid);
+      fixedPoint mac2 = gir + (ir0 * fpB2(mid));
 
       fixedPoint bir = b * ir3;
-      bir.truncateFraction(4);
       mid = bfc - bir;
-      B3(mid, 4);
-      fixedPoint mac3 = bir + (ir0 * mid);
+      fixedPoint mac3 = bir + (ir0 * fpB3(mid));
 
       /***** OUTPUTS *****/
       data_reg[MAC1].write(A1(mac1, 4));
@@ -425,16 +588,13 @@ void gte::DPCS()
       
       /***** CALCULATION *****/
       fixedPoint mid = rfc - r;
-      B1(mid, 4);
-      fixedPoint mac1 = r + (ir0 * mid);
+      fixedPoint mac1 = r + (ir0 * fpB1(mid));
 
       mid = gfc - g;
-      B2(mid, 4);
-      fixedPoint mac2 = g + (ir0 * mid);
+      fixedPoint mac2 = g + (ir0 * fpB2(mid));
 
       mid = bfc - b;
-      B3(mid, 4);
-      fixedPoint mac3 = b + (ir0 * mid);
+      fixedPoint mac3 = b + (ir0 * fpB3(mid));
 
       /***** OUTPUTS *****/
       data_reg[MAC1].write(A1(mac1, 4));
@@ -474,16 +634,13 @@ void gte::DPCT()
             
             /***** CALCULATION *****/
             fixedPoint mid = rfc - r;
-            B1(mid, 4);
-            fixedPoint mac1 = r + (ir0 * mid);
+            fixedPoint mac1 = r + (ir0 * fpB1(mid));
 
             mid = gfc - g;
-            B2(mid, 4);
-            fixedPoint mac2 = g + (ir0 * mid);
+            fixedPoint mac2 = g + (ir0 * fpB2(mid));
 
             mid = bfc - b;
-            B3(mid, 4);
-            fixedPoint mac3 = b + (ir0 * mid);
+            fixedPoint mac3 = b + (ir0 * fpB3(mid));
 
             /***** OUTPUTS *****/
             data_reg[MAC1].write(A1(mac1, 4));
@@ -517,16 +674,13 @@ void gte::INTPL()
 
       /***** CALCULATION *****/
       fixedPoint mid = rfc - ir1; // TODO investigate subtraction & truncation
-      B1(mid, 4); // TODO: we need 2 versions of B1/2/3
-      fixedPoint mac1 = ir1 + (ir0 * mid);
+      fixedPoint mac1 = ir1 + (ir0 * fpB1(mid));
 
       mid = gfc - ir2;
-      B2(mid, 4);
-      fixedPoint mac2 = ir2 + (ir0 * mid);
+      fixedPoint mac2 = ir2 + (ir0 * fpB2(mid));
 
       mid = bfc - ir3;
-      B3(mid, 4);
-      fixedPoint mac3 = ir3 + (ir0 * mid);
+      fixedPoint mac3 = ir3 + (ir0 * fpB3(mid));
       
       /***** OUTPUTS *****/
       data_reg[MAC1].write(A1(mac1, 4));
@@ -603,16 +757,9 @@ void gte::NCS()
       fixedPoint bbk(control_reg[BBK].read(), 12);
 
       /***** CALCULATION *****/
-      fixedPoint mid_1 = (l11 * vx0) + (l12 * vy0) + (l13 * vz0);
-      fixedPoint mid_2 = (l21 * vx0) + (l22 * vy0) + (l23 * vz0);
-      fixedPoint mid_3 = (l31 * vx0) + (l32 * vy0) + (l33 * vz0);
-
-      A1(mid_1, 12);
-      A2(mid_2, 12);
-      A3(mid_3, 12);
-      B1(mid_1, 12);
-      B2(mid_2, 12);
-      B3(mid_3, 12);
+      fixedPoint mid_1 = AB1((l11 * vx0) + (l12 * vy0) + (l13 * vz0));
+      fixedPoint mid_2 = AB2((l21 * vx0) + (l22 * vy0) + (l23 * vz0));
+      fixedPoint mid_3 = AB3((l31 * vx0) + (l32 * vy0) + (l33 * vz0));
 
       fixedPoint mac1 = rbk + (lr1 * mid_1) + (lr2 * mid_2) + (lr3 * mid_3);
       fixedPoint mac2 = gbk + (lg1 * mid_1) + (lg2 * mid_2) + (lg3 * mid_3);
@@ -688,16 +835,9 @@ void gte::NCT()
             }
 
             /***** CALCULATION *****/
-            fixedPoint mid_1 = (l11 * vx) + (l12 * vy) + (l13 * vz);
-            fixedPoint mid_2 = (l21 * vx) + (l22 * vy) + (l23 * vz);
-            fixedPoint mid_3 = (l31 * vx) + (l32 * vy) + (l33 * vz);
-
-            A1(mid_1, 12);
-            A2(mid_2, 12);
-            A3(mid_3, 12);
-            B1(mid_1, 12);
-            B2(mid_2, 12);
-            B3(mid_3, 12);
+            fixedPoint mid_1 = AB1((l11 * vx) + (l12 * vy) + (l13 * vz));
+            fixedPoint mid_2 = AB2((l21 * vx) + (l22 * vy) + (l23 * vz));
+            fixedPoint mid_3 = AB3((l31 * vx) + (l32 * vy) + (l33 * vz));
 
             fixedPoint mac1 = rbk + (lr1 * mid_1) + (lr2 * mid_2) + (lr3 * mid_3);
             fixedPoint mac2 = gbk + (lg1 * mid_1) + (lg2 * mid_2) + (lg3 * mid_3);
@@ -762,45 +902,28 @@ void gte::NCDS()
       fixedPoint ir0(data_reg[IR0].readLowerHalfword(), 12);
 
       /***** CALCULATION *****/
-      fixedPoint mid_a1 = (l11 * vx0) + (l12 * vy0) + (l13 * vz0);
-      fixedPoint mid_a2 = (l21 * vx0) + (l22 * vy0) + (l23 * vz0);
-      fixedPoint mid_a3 = (l31 * vx0) + (l32 * vy0) + (l33 * vz0);
+      fixedPoint mid_a1 = AB1((l11 * vx0) + (l12 * vy0) + (l13 * vz0));
+      fixedPoint mid_a2 = AB2((l21 * vx0) + (l22 * vy0) + (l23 * vz0));
+      fixedPoint mid_a3 = AB3((l31 * vx0) + (l32 * vy0) + (l33 * vz0));
 
-      A1(mid_a1, 12);
-      A2(mid_a2, 12);
-      A3(mid_a3, 12);
-      B1(mid_a1, 12);
-      B2(mid_a2, 12);
-      B3(mid_a3, 12);
-
-      fixedPoint mid_b1 = rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3);
-      fixedPoint mid_b2 = gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3);
-      fixedPoint mid_b3 = bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3);
-
-      A1(mid_b1, 12);
-      A2(mid_b2, 12);
-      A3(mid_b3, 12);
-      B1(mid_b1, 12);
-      B2(mid_b2, 12);
-      B3(mid_b3, 12);
+      fixedPoint mid_b1 = AB1(rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3));
+      fixedPoint mid_b2 = AB2(gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3));
+      fixedPoint mid_b3 = AB3(bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3));
 
       fixedPoint rir = r * mid_b1;
-      rir.truncateFraction(4);
+      //rir.truncateFraction(4);
       fixedPoint mid = rfc - rir;
-      B1(mid, 4);
-      fixedPoint mac1 = rir + (ir0 * mid);
+      fixedPoint mac1 = rir + (ir0 * fpB1(mid));
 
       fixedPoint gir = g * mid_b2;
-      gir.truncateFraction(4);
+      //gir.truncateFraction(4);
       mid = gfc - gir;
-      B2(mid, 4);
-      fixedPoint mac2 = gir + (ir0 * mid);
+      fixedPoint mac2 = gir + (ir0 * fpB2(mid));
 
       fixedPoint bir = b * mid_b3;
-      bir.truncateFraction(4);
+      //bir.truncateFraction(4);
       mid = bfc - bir;
-      B3(mid, 4);
-      fixedPoint mac3 = bir + (ir0 * mid);
+      fixedPoint mac3 = bir + (ir0 * fpB3(mid));
 
       /***** OUTPUTS *****/
       data_reg[MAC1].write(A1(mac1, 4));
@@ -882,45 +1005,28 @@ void gte::NCDT()
             }
 
             /***** CALCULATION *****/
-            fixedPoint mid_a1 = (l11 * vx) + (l12 * vy) + (l13 * vz);
-            fixedPoint mid_a2 = (l21 * vx) + (l22 * vy) + (l23 * vz);
-            fixedPoint mid_a3 = (l31 * vx) + (l32 * vy) + (l33 * vz);
+            fixedPoint mid_a1 = AB1((l11 * vx) + (l12 * vy) + (l13 * vz));
+            fixedPoint mid_a2 = AB2((l21 * vx) + (l22 * vy) + (l23 * vz));
+            fixedPoint mid_a3 = AB3((l31 * vx) + (l32 * vy) + (l33 * vz));
 
-            A1(mid_a1, 12);
-            A2(mid_a2, 12);
-            A3(mid_a3, 12);
-            B1(mid_a1, 12);
-            B2(mid_a2, 12);
-            B3(mid_a3, 12);
-
-            fixedPoint mid_b1 = rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3);
-            fixedPoint mid_b2 = gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3);
-            fixedPoint mid_b3 = bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3);
-
-            A1(mid_b1, 12);
-            A2(mid_b2, 12);
-            A3(mid_b3, 12);
-            B1(mid_b1, 12);
-            B2(mid_b2, 12);
-            B3(mid_b3, 12);
+            fixedPoint mid_b1 = AB1(rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3));
+            fixedPoint mid_b2 = AB2(gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3));
+            fixedPoint mid_b3 = AB3(bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3));
 
             fixedPoint rir = r * mid_b1;
             rir.truncateFraction(4);
             fixedPoint mid = rfc - rir;
-            B1(mid, 4);
-            fixedPoint mac1 = rir + (ir0 * mid);
+            fixedPoint mac1 = rir + (ir0 * fpB1(mid));
 
             fixedPoint gir = g * mid_b2;
             gir.truncateFraction(4);
             mid = gfc - gir;
-            B2(mid, 4);
-            fixedPoint mac2 = gir + (ir0 * mid);
+            fixedPoint mac2 = gir + (ir0 * fpB2(mid));
 
             fixedPoint bir = b * mid_b3;
             bir.truncateFraction(4);
             mid = bfc - bir;
-            B3(mid, 4);
-            fixedPoint mac3 = bir + (ir0 * mid);
+            fixedPoint mac3 = bir + (ir0 * fpB3(mid));
 
             /***** OUTPUTS *****/
             data_reg[MAC1].write(A1(mac1, 4));
@@ -975,27 +1081,13 @@ void gte::NCCS()
       fixedPoint b(data_reg[RGB0].readByte2(), 0, false);
 
       /***** CALCULATION *****/
-      fixedPoint mid_a1 = (l11 * vx0) + (l12 * vy0) + (l13 * vz0);
-      fixedPoint mid_a2 = (l21 * vx0) + (l22 * vy0) + (l23 * vz0);
-      fixedPoint mid_a3 = (l31 * vx0) + (l32 * vy0) + (l33 * vz0);
+      fixedPoint mid_a1 = AB1((l11 * vx0) + (l12 * vy0) + (l13 * vz0));
+      fixedPoint mid_a2 = AB2((l21 * vx0) + (l22 * vy0) + (l23 * vz0));
+      fixedPoint mid_a3 = AB3((l31 * vx0) + (l32 * vy0) + (l33 * vz0));
 
-      A1(mid_a1, 12);
-      A2(mid_a2, 12);
-      A3(mid_a3, 12);
-      B1(mid_a1, 12);
-      B2(mid_a2, 12);
-      B3(mid_a3, 12);
-
-      fixedPoint mid_b1 = rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3);
-      fixedPoint mid_b2 = gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3);
-      fixedPoint mid_b3 = bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3);
-
-      A1(mid_b1, 12);
-      A2(mid_b2, 12);
-      A3(mid_b3, 12);
-      B1(mid_b1, 12);
-      B2(mid_b2, 12);
-      B3(mid_b3, 12);
+      fixedPoint mid_b1 = AB1(rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3));
+      fixedPoint mid_b2 = AB2(gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3));
+      fixedPoint mid_b3 = AB3(bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3));
 
       fixedPoint mac1 = r * mid_b1;
       fixedPoint mac2 = g * mid_b2;
@@ -1075,27 +1167,13 @@ void gte::NCCT()
             }
 
             /***** CALCULATION *****/
-            fixedPoint mid_a1 = (l11 * vx) + (l12 * vy) + (l13 * vz);
-            fixedPoint mid_a2 = (l21 * vx) + (l22 * vy) + (l23 * vz);
-            fixedPoint mid_a3 = (l31 * vx) + (l32 * vy) + (l33 * vz);
+            fixedPoint mid_a1 = AB1((l11 * vx) + (l12 * vy) + (l13 * vz));
+            fixedPoint mid_a2 = AB2((l21 * vx) + (l22 * vy) + (l23 * vz));
+            fixedPoint mid_a3 = AB3((l31 * vx) + (l32 * vy) + (l33 * vz));
 
-            A1(mid_a1, 12);
-            A2(mid_a2, 12);
-            A3(mid_a3, 12);
-            B1(mid_a1, 12);
-            B2(mid_a2, 12);
-            B3(mid_a3, 12);
-
-            fixedPoint mid_b1 = rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3);
-            fixedPoint mid_b2 = gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3);
-            fixedPoint mid_b3 = bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3);
-
-            A1(mid_b1, 12);
-            A2(mid_b2, 12);
-            A3(mid_b3, 12);
-            B1(mid_b1, 12);
-            B2(mid_b2, 12);
-            B3(mid_b3, 12);
+            fixedPoint mid_b1 = AB1(rbk + (lr1 * mid_a1) + (lr2 * mid_a2) + (lr3 * mid_a3));
+            fixedPoint mid_b2 = AB2(gbk + (lg1 * mid_a1) + (lg2 * mid_a2) + (lg3 * mid_a3));
+            fixedPoint mid_b3 = AB3(bbk + (lb1 * mid_a1) + (lb2 * mid_a2) + (lb3 * mid_a3));
 
             fixedPoint mac1 = r * mid_b1;
             fixedPoint mac2 = g * mid_b2;
@@ -1150,34 +1228,24 @@ void gte::CDP()
       fixedPoint ir0(data_reg[IR0].readLowerHalfword(), 12);
       
       /***** CALCULATION *****/
-      fixedPoint mid_1 = rbk + (lr1 * ir1) + (lr2 * ir2) + (lr3 * ir3);
-      fixedPoint mid_2 = gbk + (lg1 * ir1) + (lg2 * ir2) + (lg3 * ir3);
-      fixedPoint mid_3 = bbk + (lb1 * ir1) + (lb2 * ir2) + (lb3 * ir3);
-
-      A1(mid_1, 12);
-      A2(mid_2, 12);
-      A3(mid_3, 12);
-      B1(mid_1, 12);
-      B2(mid_2, 12);
-      B3(mid_3, 12);
+      fixedPoint mid_1 = AB1(rbk + (lr1 * ir1) + (lr2 * ir2) + (lr3 * ir3));
+      fixedPoint mid_2 = AB2(gbk + (lg1 * ir1) + (lg2 * ir2) + (lg3 * ir3));
+      fixedPoint mid_3 = AB3(bbk + (lb1 * ir1) + (lb2 * ir2) + (lb3 * ir3));
 
       fixedPoint rir = r * mid_1;
       rir.truncateFraction(4);
       fixedPoint mid = rfc - rir;
-      B1(mid, 4);
-      fixedPoint mac1 = rir + (ir0 * mid);
+      fixedPoint mac1 = rir + (ir0 * fpB1(mid));
 
       fixedPoint gir = g * mid_2;
       gir.truncateFraction(4);
       mid = gfc - gir;
-      B2(mid, 4);
-      fixedPoint mac2 = gir + (ir0 * mid);
+      fixedPoint mac2 = gir + (ir0 * fpB2(mid));
 
       fixedPoint bir = b * mid_3;
       bir.truncateFraction(4);
       mid = bfc - bir;
-      B3(mid, 4);
-      fixedPoint mac3 = bir + (ir0 * mid);
+      fixedPoint mac3 = bir + (ir0 * fpB3(mid));
 
       /***** OUTPUTS *****/
       data_reg[MAC1].write(A1(mac1, 4));
@@ -1221,16 +1289,9 @@ void gte::CC()
       fixedPoint b(data_reg[RGB].readByte2(), 0, false);
 
       /***** CALCULATION *****/
-      fixedPoint mid_1 = rbk + (lr1 * ir1) + (lr2 * ir2) + (lr3 * ir3);
-      fixedPoint mid_2 = gbk + (lg1 * ir1) + (lg2 * ir2) + (lg3 * ir3);
-      fixedPoint mid_3 = bbk + (lb1 * ir1) + (lb2 * ir2) + (lb3 * ir3);
-
-      A1(mid_1, 12);
-      A2(mid_2, 12);
-      A3(mid_3, 12);
-      B1(mid_1, 12);
-      B2(mid_2, 12);
-      B3(mid_3, 12);
+      fixedPoint mid_1 = AB1(rbk + (lr1 * ir1) + (lr2 * ir2) + (lr3 * ir3));
+      fixedPoint mid_2 = AB2(gbk + (lg1 * ir1) + (lg2 * ir2) + (lg3 * ir3));
+      fixedPoint mid_3 = AB3(bbk + (lb1 * ir1) + (lb2 * ir2) + (lb3 * ir3));
 
       fixedPoint mac1 = r * mid_1;
       fixedPoint mac2 = g * mid_2;

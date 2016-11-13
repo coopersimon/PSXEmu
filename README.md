@@ -1,19 +1,25 @@
 # TODO:
 
-* GTE instructions
+## Code:
+
+* GTE: finish off first few instructions
 * Fixed point and repeating sections of GTE instructions need refinement
 * CPU Tests
 * GTE Tests
-* GPU and window interface
+* GPU and window interface (opengl and vulkan)
 * MDEC needs finishing
 * DMA needs testing
 * Method of loading data from ROMs/CDs
 * Interrupts
 * Controllers: both control system and maps to hardware devices
 
+## Project Management
 * Internally: Some sort of error system. (e.g. memory addresses)
+* Sorting out graphics APIs and locations
+* CMAKE!! Get cmake working for the project. This is crucial for linking with graphics libs
 
-CPU needs to be tested in depth: the testbench is written and tests can be written too! Don't be afraid to write tests
+
+CPU needs to be tested in depth: the testbench is written and tests can be written too!
 
 
 # DONE:
@@ -22,7 +28,7 @@ CPU needs to be tested in depth: the testbench is written and tests can be writt
 * Registers
 * CPU
 * CPU testbench
-* GTE base
+* GTE instructions and flags
 * Fixed point for GTE
 * GTE testbench
 * DMA base

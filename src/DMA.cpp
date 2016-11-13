@@ -70,6 +70,15 @@ void dmaChannel::writeRegister(word data, DMAReg reg)
             block_control = data;
       
       else if (reg == DMAChannelControl)
+      {
+            word channel_control = 0;
+            transfer_direction = reg & 0x1;
+            mem_address_step = (reg >> 1) & 0x1;
+            chopping = (reg >> 7) & 0x1;
+            sync_mode = (reg >> 8) & 0x3;
+            chop_dma_window_size = (reg >> 15) & 0x7;
+            chop_cpu_window_size = (reg >> 19) & 0x7;
+      }
             channel_control.data_field = data;
 }
 
@@ -104,7 +113,7 @@ void dmaChannel::transferWordToRAM()
 
 /*** DMA controller ***/
 
-dma::dma(RAMImpl* main_ram, std::vector<dmaDevice*> &devices)
+dma::dma(RAMImpl* main_ram, std::vector<dmaDevice*>& devices)
 {
       for (dmaDevice* d : devices)
       {

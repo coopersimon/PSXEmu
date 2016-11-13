@@ -76,6 +76,7 @@ public:
 
                   if (mirror)
                         mirror->write(in);
+
                   data = in;
             }
       } 
@@ -121,15 +122,25 @@ private:
       /*** FLAG BITS ***/
       // Set bits in FLAG register & return word
 
-      // for MAC return: check not larger than 43 bits & truncate
+      // for MAC return: check 43 bit overflow & truncate
       word A1(fixedPoint &input, unsigned fraction);
       word A2(fixedPoint &input, unsigned fraction);
       word A3(fixedPoint &input, unsigned fraction);
 
       // for IR return: saturate between -8000/0,7FFF
-      word B1(fixedPoint &input, unsigned fraction);
-      word B2(fixedPoint &input, unsigned fraction);
-      word B3(fixedPoint &input, unsigned fraction);
+      word B1(fixedPoint input, unsigned fraction);
+      word B2(fixedPoint input, unsigned fraction);
+      word B3(fixedPoint input, unsigned fraction);
+
+      // same as A and B, for mid-calculation
+      fixedPoint AB1(fixedPoint input);
+      fixedPoint AB2(fixedPoint input);
+      fixedPoint AB3(fixedPoint input);
+
+      // same as B, for mid-calculation
+      fixedPoint fpB1(fixedPoint input);
+      fixedPoint fpB2(fixedPoint input);
+      fixedPoint fpB3(fixedPoint input);
 
       // for RGB return: saturate between 0,FF
       word C1(fixedPoint &input);
@@ -142,15 +153,15 @@ private:
       // divide overflow
       //word E(fixedPoint &input);
       
-      // for MAC0 return: check not larger than 31 bits & truncate
+      // for MAC0 return: check 31 bit overflow & truncate
       word F(fixedPoint &input);
       
-      // for SXY return: saturate between -400,3FF
-      word G1(fixedPoint &input);
-      word G2(fixedPoint &input);
+      // for SXY return: saturate between -400,3FF & check 31 bit overflow
+      word G1F(fixedPoint &input);
+      word G2F(fixedPoint &input);
 
       // for IR0 return: saturate between 0,1000
-      //word Hx(fixedPoint &input);
+      word Hx(fixedPoint &input);
 
 
 	/*** INSTRUCTIONS ***/

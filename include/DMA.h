@@ -56,6 +56,15 @@ class dmaChannel
             word data_field;
       } channel_control;
 
+      bool transfer_direction;
+      bool mem_address_step;
+      bool chopping;
+      unsigned sync_mode;
+      unsigned chop_dma_window_size;
+      unsigned chop_cpu_window_size;
+      bool start_busy;
+      bool start_trigger;
+
 public:
       dmaChannel(dmaDevice* device_ptr, RAMImpl* ram_ptr) :
             device(device_ptr), main_ram(ram_ptr) {}
@@ -66,8 +75,8 @@ public:
       enum DMAReg
       {
             DMABase = 0;
-            DMABlockControl = 4;
-            DMAChannelControl = 8;
+            DMABlockControl = 1;
+            DMAChannelControl = 2;
       };
 
       // write base address, block control or channel control.
@@ -95,7 +104,7 @@ class dma : public memoryInterface
 
 public:
       // constructor creates dmaChannel for each device
-      dma(RAMImpl* main_ram, std::vector<dmaDevice*> &devices);
+      dma(RAMImpl* main_ram, std::vector<dmaDevice*>& devices);
 
       // memoryInterface functions
       word readWord(unsigned address) override;
@@ -107,10 +116,10 @@ private:
 
       inline word readRegister(unsigned address)
       {
-            unsigned device = address & 0xFF;
+            unsigned device = (address * 4) & 0xFF;
 
             if ((device < 0xF0) && (device >= 0x80))
-                  return channel_list[device - 8].readRegister(address % 0xF);
+                  return channel_list[device - 8].readRegister(address % 0x3);
             
             else if (device == 0xF0)
                   return control_reg;
@@ -128,7 +137,7 @@ private:
             unsigned device = address & 0xFF;
 
             if ((device < 0xF0) && (device >= 0x80))
-                  channel_list[device - 8].writeRegister(in, address % 0xF);
+                  channel_list[device - 8].writeRegister(in, address % 0x3);
 
             else if (device == 0xF0)
                   control_reg = in;

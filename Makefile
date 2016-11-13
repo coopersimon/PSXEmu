@@ -24,7 +24,8 @@ test/gte/bin/SQR_1 test/gte/bin/SQR_2 test/gte/bin/SQR_3 test/gte/bin/SQR_4 \
 test/gte/bin/INTPL_1 test/gte/bin/INTPL_2 \
 test/gte/bin/NCLIP_1 \
 test/gte/bin/MVMVA_1 test/gte/bin/MVMVA_2 test/gte/bin/MVMVA_3 \
-test/gte/bin/CC_1
+test/gte/bin/CC_1 \
+test/gte/bin/NCS_1
 
 
 # TEST CPU
@@ -143,6 +144,9 @@ test/gte/bin/MVMVA_3 : test/gte/src/MVMVA_3.cpp $(TESTGTELINK)
 
 test/gte/bin/CC_1 : test/gte/src/CC_1.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/CC_1.cpp $(TESTGTELINK) -o $@
+
+test/gte/bin/NCS_1 : test/gte/src/NCS_1.cpp $(TESTGTELINK)
+	$(CXX) $(CXXFLAGS) test/gte/src/NCS_1.cpp $(TESTGTELINK) -o $@
 
 
 # OBJECT FILES

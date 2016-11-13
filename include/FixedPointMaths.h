@@ -9,6 +9,7 @@
  */ 
 
 #include <Memory.h>
+#include <string>
 
 // NOTE: input to fixed point operations MUST be 32 bit to get accurate results
 // operations on unknown data (which could be up to 64 bits) could result in errors
@@ -56,7 +57,7 @@ public:
 
       // check the number is not using more than "bits"
       // if it is return true
-      bool checkBits(unsigned bits) const;
+      bool checkOverflow(unsigned bits) const;
 
       // positive = false, negative = true
       bool checkSign() const;
@@ -78,6 +79,9 @@ public:
       friend fixedPoint operator+(const fixedPoint& lhs, const fixedPoint& rhs);
       friend fixedPoint operator-(const fixedPoint& lhs, const fixedPoint& rhs);
       friend fixedPoint operator*(const fixedPoint& lhs, const fixedPoint& rhs);
+
+      /*** DEBUG ***/
+      std::string hexStr() const; // return int.frac in hex
 };
 
 fixedPoint operator+(const fixedPoint& lhs, const fixedPoint& rhs);

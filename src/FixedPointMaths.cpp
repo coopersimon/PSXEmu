@@ -1,5 +1,7 @@
 #include <FixedPointMaths.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 
 fixedPoint fixedPoint::multiply(fixedPoint a, fixedPoint b)
 {
@@ -76,7 +78,7 @@ bool fixedPoint::checkSaturation(s_word value, bool not_signed)
       return false;
 }
 
-bool fixedPoint::checkBits(unsigned bits) const
+bool fixedPoint::checkOverflow(unsigned bits) const
 {
       doubleword masked_number = (number < 0) ?
             doubleword(-number) : doubleword(number);
@@ -166,4 +168,13 @@ fixedPoint operator*(const fixedPoint& lhs, const fixedPoint& rhs)
       s_doubleword new_number = lhs.number * rhs.number;
       unsigned new_frac_range = lhs.frac_range + rhs.frac_range;
       return fixedPoint(new_number, new_frac_range);
+}
+
+std::string fixedPoint::hexStr() const
+{
+      s_doubleword num_out = number >> frac_range;
+      s_doubleword frac_out = number & ((1 << frac_range) - 1);
+      std::stringstream out_stream;
+      out_stream << std::hex << num_out << "." << std::hex << frac_out;
+      return out_stream.str();
 }
