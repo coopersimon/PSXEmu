@@ -1,6 +1,12 @@
-# TODO:
+# PSXEMU
+Playstation emulator. Very much a work-in-progress.
 
-## Code:
+A personal project to learn about 3D graphics (hardware and software), computer architecture and software project management.
+
+
+## TODO:
+
+### Code:
 
 * GTE: finish off first few instructions
 * Fixed point and repeating sections of GTE instructions need refinement
@@ -13,16 +19,21 @@
 * Interrupts
 * Controllers: both control system and maps to hardware devices
 
-## Project Management
+### Project Management
 * Internally: Some sort of error system. (e.g. memory addresses)
 * Sorting out graphics APIs and locations
-* CMAKE!! Get cmake working for the project. This is crucial for linking with graphics libs
+* CMAKE!! Get cmake working for the project. This (may be) crucial for linking with graphics libs
+
+#### Personal notes:
+For compiling graphics: _pkg-config --static --libs glfw3_. Everything that comes up needs to be linked.
+
+glfw3 libraries are found in /usr/local/lib
 
 
 CPU needs to be tested in depth: the testbench is written and tests can be written too!
 
 
-# DONE:
+## DONE:
 
 * Memory base
 * Registers
@@ -34,7 +45,7 @@ CPU needs to be tested in depth: the testbench is written and tests can be writt
 * DMA base
 
 
-# Documentation:
+## Documentation:
 
 [Everything you have always wanted to know...](http://gamehacking.org/faqs/PSX.pdf)
 

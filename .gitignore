@@ -4,4 +4,4 @@ test/cpu/src/*.o
 test/cpu/bin/*
 test/gte/src/*.o
 test/gte/bin/*
-include/GPUBase.h
+.txt

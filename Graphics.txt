@@ -1,0 +1,8 @@
+GRAPHICS TODO:
+
+Different primitives, how are they buffered, how are they rendered?
+How is the buffer stored, is it emptied?
+Can all our polygons be drawn in 2D?
+Moving stuff within the buffer
+Keeping track of vertices
+
