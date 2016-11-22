@@ -54,8 +54,8 @@ class glgpu : public dmaDevice, public memoryInterface
       // dma stuff
 
       /*** FUNCTION POINTERS ***/
-      //std::vector<std::function<unsigned(glgpu*)>> gp0;
-      //std::vector<std::function<void(glgpu*, unsigned)>> gp1;
+      std::vector<std::function<unsigned(glgpu*)>> gp0;
+      std::vector<std::function<void(glgpu*, unsigned)>> gp1;
       // number of parameters to wait for
       unsigned params_rem;
 
@@ -87,8 +87,6 @@ class glgpu : public dmaDevice, public memoryInterface
       // drawing screen
       bool refresh_ready;
 
-      int total_poly;
-      float total_time;
       int triangle_count;
       std::vector<GLfloat> triangle_buffer;
 
@@ -128,6 +126,7 @@ private:
 
 
       /*** GP1 (CONTROL) FUNCTIONS ***/
+      void GP1RESERVED(unsigned);
       void resetGPU(unsigned param);
       void resetCommandBuffer(unsigned param);
       void resetIRQ(unsigned param);
@@ -141,32 +140,32 @@ private:
 
       /*** GP0 COMMANDS ***/
       // these all return the number of parameters needed to run
-      unsigned RESERVED();
+      unsigned GP0RESERVED();
 
       /*** PRIMITIVE DRAWING ***/
       unsigned mono3Polygon();
-      /*unsigned tex3Polygon();
+      unsigned tex3Polygon();       //TODO
       unsigned grad3Polygon();
-      unsigned gradTex3Polygon();
+      unsigned gradTex3Polygon();   //TODO
 
       unsigned mono4Polygon();
-      unsigned tex4Polygon();
+      unsigned tex4Polygon();       //TODO
       unsigned grad4Polygon();
-      unsigned gradTex4Polygon();
+      unsigned gradTex4Polygon();   //TODO
 
-      unsigned monoLine();
-      unsigned monoPolyLine();
-      unsigned gradLine();
-      unsigned gradPolyLine();
+      unsigned monoLine();          //TODO
+      unsigned monoPolyLine();      //TODO
+      unsigned gradLine();          //TODO
+      unsigned gradPolyLine();      //TODO
 
-      unsigned rect();
-      unsigned sprite();
-      unsigned dot();
+      unsigned rect();              //TODO
+      unsigned sprite();            //TODO
+      unsigned dot();               //TODO
 
-      unsigned rect8();
-      unsigned sprite8();
-      unsigned rect16();
-      unsigned sprite16();*/
+      unsigned rect8();             //TODO
+      unsigned sprite8();           //TODO
+      unsigned rect16();            //TODO
+      unsigned sprite16();          //TODO
 
       /*** COMMAND & TRANSFER ***/
       unsigned clearCache();

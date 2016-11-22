@@ -13,9 +13,16 @@ int main()
             unsigned xy1 = ((rand() % 240) << 16) | (rand() % 320);
             unsigned xy2 = ((rand() % 240) << 16) | (rand() % 320);
             unsigned xy3 = ((rand() % 240) << 16) | (rand() % 320);
-            device.writeWord(0, rand());
+            unsigned c2 = ((rand() % 240) << 16) | (rand() % 320);
+            unsigned c3 = ((rand() % 240) << 16) | (rand() % 320);
+            //unsigned command = 0x32000000 | (rand() & 0xFFFFFF);
+            unsigned command = rand();
+
+            device.writeWord(0, command);
             device.writeWord(0, xy1);
+            device.writeWord(0, c2);
             device.writeWord(0, xy2);
+            device.writeWord(0, c3);
             device.writeWord(0, xy3);
 
             /*device.writeWord(0, 0x00000000);

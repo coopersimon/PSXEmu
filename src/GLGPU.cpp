@@ -5,10 +5,10 @@
 
 
 static const std::string vertex_shader_source =
-      "#version 330\nin vec2 position;\nin vec3 color;\nout vec3 frag_color;\nvoid main()\n{\nfrag_color = color;\ngl_Position = vec4(position, 0.0, 1.0);\n}";
+      "#version 330\nin vec2 position;\nin vec4 color;\nout vec4 frag_color;\nvoid main()\n{\nfrag_color = color;\ngl_Position = vec4(position, 0.0, 1.0);\n}";
 
 static const std::string fragment_shader_source = 
-      "#version 330\nin vec3 frag_color;\nout vec4 outColor;\nvoid main()\n{\noutColor = vec4(frag_color, 1.0);\n}";
+      "#version 330\nin vec4 frag_color;\nout vec4 outColor;\nvoid main()\n{\noutColor = frag_color;\n}";
 
 // TODO: gpu errors
 glgpu::glgpu()
@@ -16,6 +16,7 @@ glgpu::glgpu()
       // initialise OpenGL
       if (!glfwInit())
       {
+            std::cout << "glfw failed" << std::endl;
             // throw error
       }
 
@@ -29,6 +30,7 @@ glgpu::glgpu()
       glewExperimental = true;
       if (glewInit() != GLEW_OK)
       {
+            std::cout << "glew failed" << std::endl;
             // throw error
       }
 
@@ -37,58 +39,58 @@ glgpu::glgpu()
 
       glGenBuffers(1, &vertex_buffer);
       glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-      // buffer may need to be setup later?
-      //glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat[100000]), NULL, GL_STREAM_DRAW);
 
       gourad_shader = compileShader(vertex_shader_source.c_str(), fragment_shader_source.c_str());
       glUseProgram(gourad_shader);
 
       GLint position_attr = glGetAttribLocation(gourad_shader, "position");
       glEnableVertexAttribArray(position_attr);
-      glVertexAttribPointer(position_attr, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
+      glVertexAttribPointer(position_attr, 2, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
 
       GLint colour_attr = glGetAttribLocation(gourad_shader, "color");
       glEnableVertexAttribArray(colour_attr);
-      glVertexAttribPointer(colour_attr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
+      glVertexAttribPointer(colour_attr, 4, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(2*sizeof(float)));
 
+      glEnable(GL_BLEND);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
       // registers & function pointer(s)
 
-      /*gp0_command = {
-            &glgpu::RESERVED, &glgpu::clearCache, &glgpu::frameBufferRectDraw, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
+      gp0 = {
+            &glgpu::GP0RESERVED, &glgpu::clearCache, &glgpu::frameBufferRectDraw, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
 
-            &glgpu::mono3Polygon, &glgpu::RESERVED, &glgpu::mono3Polygon, &glgpu::RESERVED,
+            &glgpu::mono3Polygon, &glgpu::GP0RESERVED, &glgpu::mono3Polygon, &glgpu::GP0RESERVED,
             &glgpu::tex3Polygon, &glgpu::tex3Polygon, &glgpu::tex3Polygon, &glgpu::tex3Polygon,
-            &glgpu::mono4Polygon, &glgpu::RESERVED, &glgpu::mono4Polygon, &glgpu::RESERVED,
+            &glgpu::mono4Polygon, &glgpu::GP0RESERVED, &glgpu::mono4Polygon, &glgpu::GP0RESERVED,
             &glgpu::tex4Polygon, &glgpu::tex4Polygon, &glgpu::tex4Polygon, &glgpu::tex4Polygon,
-            &glgpu::grad3Polygon, &glgpu::RESERVED, &glgpu::grad3Polygon, &glgpu::RESERVED,
-            &glgpu::gradTex3Polygon, &glgpu::RESERVED, &glgpu::gradTex3Polygon, &glgpu::RESERVED,
-            &glgpu::grad4Polygon, &glgpu::RESERVED, &glgpu::grad4Polygon, &glgpu::RESERVED,
-            &glgpu::gradTex4Polygon, &glgpu::RESERVED, &glgpu::gradTex4Polygon, &glgpu::RESERVED,
+            &glgpu::grad3Polygon, &glgpu::GP0RESERVED, &glgpu::grad3Polygon, &glgpu::GP0RESERVED,
+            &glgpu::gradTex3Polygon, &glgpu::GP0RESERVED, &glgpu::gradTex3Polygon, &glgpu::GP0RESERVED,
+            &glgpu::grad4Polygon, &glgpu::GP0RESERVED, &glgpu::grad4Polygon, &glgpu::GP0RESERVED,
+            &glgpu::gradTex4Polygon, &glgpu::GP0RESERVED, &glgpu::gradTex4Polygon, &glgpu::GP0RESERVED,
 
-            &glgpu::monoLine, &glgpu::RESERVED, &glgpu::monoLine, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::monoPolyLine, &glgpu::RESERVED, &glgpu::monoPolyLine, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::gradLine, &glgpu::RESERVED, &glgpu:gradLine, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::gradPolyLine, &glgpu::RESERVED, &glgpu::gradPolyLine, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
+            &glgpu::monoLine, &glgpu::GP0RESERVED, &glgpu::monoLine, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::monoPolyLine, &glgpu::GP0RESERVED, &glgpu::monoPolyLine, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::gradLine, &glgpu::GP0RESERVED, &glgpu::gradLine, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::gradPolyLine, &glgpu::GP0RESERVED, &glgpu::gradPolyLine, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
 
-            &glgpu::rect, &glgpu::RESERVED, &glgpu::rect, &glgpu::RESERVED,
+            &glgpu::rect, &glgpu::GP0RESERVED, &glgpu::rect, &glgpu::GP0RESERVED,
             &glgpu::sprite, &glgpu::sprite, &glgpu::sprite, &glgpu::sprite,
-            &glgpu::dot, &glgpu::RESERVED, &glgpu::dot, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::rect8, &glgpu::RESERVED, &glgpu::rect8, &glgpu::RESERVED,
+            &glgpu::dot, &glgpu::GP0RESERVED, &glgpu::dot, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::rect8, &glgpu::GP0RESERVED, &glgpu::rect8, &glgpu::GP0RESERVED,
             &glgpu::sprite8, &glgpu::sprite8, &glgpu::sprite8, &glgpu::sprite8,
-            &glgpu::rect16, &glgpu::RESERVED, &glgpu::rect16, &glgpu::RESERVED,
+            &glgpu::rect16, &glgpu::GP0RESERVED, &glgpu::rect16, &glgpu::GP0RESERVED,
             &glgpu::sprite16, &glgpu::sprite16, &glgpu::sprite16, &glgpu::sprite16,
 
             &glgpu::copyInVRAM, &glgpu::copyInVRAM, &glgpu::copyInVRAM, &glgpu::copyInVRAM, 
@@ -118,25 +120,33 @@ glgpu::glgpu()
             &glgpu::copyFromVRAM, &glgpu::copyFromVRAM, &glgpu::copyFromVRAM, &glgpu::copyFromVRAM, 
             &glgpu::copyFromVRAM, &glgpu::copyFromVRAM, &glgpu::copyFromVRAM, &glgpu::copyFromVRAM, 
 
-            &glgpu::RESERVED, &glgpu::drawMode, &glgpu::textureWindow, &glgpu::setDrawTopLeft,
-            &glgpu::setDrawBottomRight, &glgpu::drawingOffset, &glgpu::maskSetting, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
-            &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED
-      };*/
+            &glgpu::GP0RESERVED, &glgpu::drawMode, &glgpu::textureWindow, &glgpu::setDrawTopLeft,
+            &glgpu::setDrawBottomRight, &glgpu::drawingOffset, &glgpu::maskSetting, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED,
+            &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED, &glgpu::GP0RESERVED
+      };
 
-      //gp1_command
+      gp1 = {
+            &glgpu::resetGPU, &glgpu::resetCommandBuffer, &glgpu::resetIRQ, &glgpu::displayEnable,
+            &glgpu::setupDMA, &glgpu::displayArea, &glgpu::horizontalDisplayRange, &glgpu::verticalDisplayRange,
+            &glgpu::displayMode, &glgpu::GP1RESERVED, &glgpu::GP1RESERVED, &glgpu::GP1RESERVED,
+            &glgpu::GP1RESERVED, &glgpu::GP1RESERVED, &glgpu::GP1RESERVED, &glgpu::GP1RESERVED,
+            &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo, 
+            &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo, 
+            &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo, 
+            &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo, &glgpu::gpuInfo
+      };
 
       // other status
       params_rem = 0;
       //command_buffer = FIFOImpl<word>(16);
       refresh_ready = false;
       glfwSetTime(0);
-      total_time = 0;
-      total_poly = 0;
+      triangle_count = 0;
 
       draw_x_left = 0;
       draw_x_right = 320;
@@ -159,18 +169,16 @@ glgpu::~glgpu()
 bool glgpu::refreshWindow()
 {
       glfwPollEvents();
-      if (glfwWindowShouldClose(window) || glfwGetTime() >= 100.0)
+      if (glfwWindowShouldClose(window))
       {
-            std::cout << total_poly / 100 << std::endl;
             glfwDestroyWindow(window);
             return false;
       }
 
-      //while(refresh_ready)
-      //{
-            if (glfwGetTime() >= 0.0333 + total_time)
+      while(refresh_ready)
+      {
+            if (glfwGetTime() >= 0.0333)
             {
-                  total_time += 0.0333;
                   refresh_ready = false;
                   glBufferData(GL_ARRAY_BUFFER, triangle_buffer.size()*sizeof(GLfloat), triangle_buffer.data(), GL_STATIC_DRAW);
                   glDrawArrays(GL_TRIANGLES, 0, 3*triangle_count);
@@ -179,7 +187,7 @@ bool glgpu::refreshWindow()
                   glfwSwapBuffers(window);
                   glClear(GL_COLOR_BUFFER_BIT);
             }
-      //}
+      }
 
       return true;
 }
@@ -192,13 +200,12 @@ void glgpu::wordFromDMA(word in)
             command_buffer.write(in);
             params_rem--;
             if (params_rem == 0)
-                  //gp0[gp0_command](this);
-                  mono3Polygon();
+                  gp0[gp0_command](this);
       }
       else
       {
             gp0_command = (in >> 24) & 0xFF;
-            params_rem = /*gp0[gp0_command](this);*/ mono3Polygon();
+            params_rem = gp0[gp0_command](this);
       }
 }
 
@@ -230,19 +237,18 @@ void glgpu::writeWord(unsigned address, word in)
                   command_buffer.write(in);
                   params_rem--;
                   if (params_rem == 0)
-                        //gp0[(gp0_command >> 24) & 0xFF](this);
-                        mono3Polygon();
+                        gp0[(gp0_command >> 24) & 0xFF](this);
             }
             else
             {
                   gp0_command = in;
-                  params_rem = /*gp0[(gp0_command >> 24) & 0xFF](this);*/ mono3Polygon();
+                  params_rem = gp0[(gp0_command >> 24) & 0xFF](this);
             }
       }
       else
       {
             // gp1 command
-            //gp1[(in >> 24) % 0x20](this, in);
+            gp1[(in >> 24) % 0x20](this, in);
       }
 }
 
@@ -257,7 +263,7 @@ GLuint glgpu::compileShader(const char* vertex_shader_source, const char* fragme
       glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
       if (status != GL_TRUE)
       {
-            std::cout << "shader fuckup 1" << std::endl;
+            std::cout << "vertex shader failed to compile" << std::endl;
             // throw error
       }
 
@@ -267,7 +273,7 @@ GLuint glgpu::compileShader(const char* vertex_shader_source, const char* fragme
       glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &status);
       if (status != GL_TRUE)
       {
-            std::cout << "shader fuckup 2" << std::endl;
+            std::cout << "fragment shader failed to compile" << std::endl;
             // throw error
       }
       
@@ -392,6 +398,12 @@ void glgpu::setWindowResolution()
 
 
 // control functions
+
+void glgpu::GP1RESERVED(unsigned param)
+{
+      return;
+}
+
 void glgpu::resetGPU(unsigned param)
 {
       command_buffer.clear();
@@ -497,7 +509,7 @@ void glgpu::gpuInfo(unsigned param)
 }
 
 
-unsigned RESERVED()
+unsigned glgpu::GP0RESERVED()
 {
       return 0;
 }
@@ -529,10 +541,14 @@ unsigned glgpu::mono3Polygon()
       GLfloat g = convertColour((gp0_command >> 11) & 0x1F);
       GLfloat b = convertColour((gp0_command >> 19) & 0x1F);
 
+      GLfloat transparency = 1.0;
+      if (gp0_command & 0x02000000)
+            transparency = 0.5;
+
       // add to triangle buffer.
-      GLfloat triangle[] = {  x_1, y_1, r, g, b,
-                              x_2, y_2, r, g, b,
-                              x_3, y_3, r, g, b };
+      GLfloat triangle[] = {  x_1, y_1, r, g, b, transparency,
+                              x_2, y_2, r, g, b, transparency,
+                              x_3, y_3, r, g, b, transparency };
       triangle_buffer.insert(triangle_buffer.end(), triangle, std::end(triangle));
 
       //glBufferSubData(GL_ARRAY_BUFFER, tri_ptr, sizeof(triangle), triangle);
@@ -545,15 +561,254 @@ unsigned glgpu::mono3Polygon()
             // vertex_count += 3
 
       triangle_count++;
-      total_poly++;
+      refresh_ready = true;
+
+      return 0;
+}
+
+unsigned glgpu::tex3Polygon()
+{
+      return 0;
+}
+
+unsigned glgpu::grad3Polygon()
+{
+      if (command_buffer.size() < 5)
+            return 5;
+
+      // retrieve arguments
+      word colour_1 = gp0_command;
+      word vertex_1 = command_buffer.read();
+      word colour_2 = command_buffer.read();
+      word vertex_2 = command_buffer.read();
+      word colour_3 = command_buffer.read();
+      word vertex_3 = command_buffer.read();
+
+      // convert x & y input to float. likely a complex function of its own
+      GLfloat x_1 = convertXCoord(s_halfword(vertex_1 & 0xFFFF));
+      GLfloat y_1 = convertYCoord(s_halfword((vertex_1 >> 16) & 0xFFFF));
+      GLfloat x_2 = convertXCoord(s_halfword(vertex_2 & 0xFFFF));
+      GLfloat y_2 = convertYCoord(s_halfword((vertex_2 >> 16) & 0xFFFF));
+      GLfloat x_3 = convertXCoord(s_halfword(vertex_3 & 0xFFFF));
+      GLfloat y_3 = convertYCoord(s_halfword((vertex_3 >> 16) & 0xFFFF));
+
+      // convert colour
+      GLfloat r_1 = convertColour((colour_1 >> 3) & 0x1F);
+      GLfloat g_1 = convertColour((colour_1 >> 11) & 0x1F);
+      GLfloat b_1 = convertColour((colour_1 >> 19) & 0x1F);
+      GLfloat r_2 = convertColour((colour_2 >> 3) & 0x1F);
+      GLfloat g_2 = convertColour((colour_2 >> 11) & 0x1F);
+      GLfloat b_2 = convertColour((colour_2 >> 19) & 0x1F);
+      GLfloat r_3 = convertColour((colour_3 >> 3) & 0x1F);
+      GLfloat g_3 = convertColour((colour_3 >> 11) & 0x1F);
+      GLfloat b_3 = convertColour((colour_3 >> 19) & 0x1F);
+
+      GLfloat transparency = 1.0;
+      if (gp0_command & 0x02000000)
+            transparency = 0.5;
+
+      // add to triangle buffer.
+      GLfloat triangle[] = {  x_1, y_1, r_1, g_1, b_1, transparency,
+                              x_2, y_2, r_2, g_2, b_2, transparency,
+                              x_3, y_3, r_3, g_3, b_3, transparency };
+      triangle_buffer.insert(triangle_buffer.end(), triangle, std::end(triangle));
+
+      //glBufferSubData(GL_ARRAY_BUFFER, tri_ptr, sizeof(triangle), triangle);
+      //glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      // use shader (maybe not until render time?)
+            // maybe make use of vao here.
+      // might need to store meta data about triangle, eg:
+            // primitive_list->add(triangle)
+            // vertex_count += 3
+
+      triangle_count++;
       refresh_ready = true;
 
       return 0;
 }
 
 
+unsigned glgpu::gradTex3Polygon()
+{
+      return 0;
+}
 
+unsigned glgpu::mono4Polygon()
+{
+      if (command_buffer.size() < 4)
+            return 4;
 
+      // retrieve arguments
+      word vertex_1 = command_buffer.read();
+      word vertex_2 = command_buffer.read();
+      word vertex_3 = command_buffer.read();
+      word vertex_4 = command_buffer.read();
+
+      // convert x & y input to float. likely a complex function of its own
+      GLfloat x_1 = convertXCoord(s_halfword(vertex_1 & 0xFFFF));
+      GLfloat y_1 = convertYCoord(s_halfword((vertex_1 >> 16) & 0xFFFF));
+      GLfloat x_2 = convertXCoord(s_halfword(vertex_2 & 0xFFFF));
+      GLfloat y_2 = convertYCoord(s_halfword((vertex_2 >> 16) & 0xFFFF));
+      GLfloat x_3 = convertXCoord(s_halfword(vertex_3 & 0xFFFF));
+      GLfloat y_3 = convertYCoord(s_halfword((vertex_3 >> 16) & 0xFFFF));
+      GLfloat x_4 = convertXCoord(s_halfword(vertex_4 & 0xFFFF));
+      GLfloat y_4 = convertYCoord(s_halfword((vertex_4 >> 16) & 0xFFFF));
+
+      // convert colour
+      GLfloat r = convertColour((gp0_command >> 3) & 0x1F);
+      GLfloat g = convertColour((gp0_command >> 11) & 0x1F);
+      GLfloat b = convertColour((gp0_command >> 19) & 0x1F);
+
+      GLfloat transparency = 1.0;
+      if (gp0_command & 0x02000000)
+            transparency = 0.5;
+
+      // add to triangle buffer.
+      GLfloat triangle[] = {  x_1, y_1, r, g, b, transparency,
+                              x_2, y_2, r, g, b, transparency,
+                              x_3, y_3, r, g, b, transparency,
+                              x_2, y_2, r, g, b, transparency,
+                              x_3, y_3, r, g, b, transparency,
+                              x_4, y_4, r, g, g, transparency };
+      triangle_buffer.insert(triangle_buffer.end(), triangle, std::end(triangle));
+
+      //glBufferSubData(GL_ARRAY_BUFFER, tri_ptr, sizeof(triangle), triangle);
+      //glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      // use shader (maybe not until render time?)
+            // maybe make use of vao here.
+      // might need to store meta data about triangle, eg:
+            // primitive_list->add(triangle)
+            // vertex_count += 3
+
+      triangle_count += 2;
+      refresh_ready = true;
+
+      return 0;
+}
+
+unsigned glgpu::tex4Polygon()
+{
+      return 0;
+}
+unsigned glgpu::grad4Polygon()
+{
+      if (command_buffer.size() < 7)
+            return 7;
+
+      // retrieve arguments
+      word colour_1 = gp0_command;
+      word vertex_1 = command_buffer.read();
+      word colour_2 = command_buffer.read();
+      word vertex_2 = command_buffer.read();
+      word colour_3 = command_buffer.read();
+      word vertex_3 = command_buffer.read();
+      word colour_4 = command_buffer.read();
+      word vertex_4 = command_buffer.read();
+
+      // convert x & y input to float. likely a complex function of its own
+      GLfloat x_1 = convertXCoord(s_halfword(vertex_1 & 0xFFFF));
+      GLfloat y_1 = convertYCoord(s_halfword((vertex_1 >> 16) & 0xFFFF));
+      GLfloat x_2 = convertXCoord(s_halfword(vertex_2 & 0xFFFF));
+      GLfloat y_2 = convertYCoord(s_halfword((vertex_2 >> 16) & 0xFFFF));
+      GLfloat x_3 = convertXCoord(s_halfword(vertex_3 & 0xFFFF));
+      GLfloat y_3 = convertYCoord(s_halfword((vertex_3 >> 16) & 0xFFFF));
+      GLfloat x_4 = convertXCoord(s_halfword(vertex_4 & 0xFFFF));
+      GLfloat y_4 = convertYCoord(s_halfword((vertex_4 >> 16) & 0xFFFF));
+
+      // convert colour
+      GLfloat r_1 = convertColour((colour_1 >> 3) & 0x1F);
+      GLfloat g_1 = convertColour((colour_1 >> 11) & 0x1F);
+      GLfloat b_1 = convertColour((colour_1 >> 19) & 0x1F);
+      GLfloat r_2 = convertColour((colour_2 >> 3) & 0x1F);
+      GLfloat g_2 = convertColour((colour_2 >> 11) & 0x1F);
+      GLfloat b_2 = convertColour((colour_2 >> 19) & 0x1F);
+      GLfloat r_3 = convertColour((colour_3 >> 3) & 0x1F);
+      GLfloat g_3 = convertColour((colour_3 >> 11) & 0x1F);
+      GLfloat b_3 = convertColour((colour_3 >> 19) & 0x1F);
+      GLfloat r_4 = convertColour((colour_4 >> 3) & 0x1F);
+      GLfloat g_4 = convertColour((colour_4 >> 11) & 0x1F);
+      GLfloat b_4 = convertColour((colour_4 >> 19) & 0x1F);
+
+      GLfloat transparency = 1.0;
+      if (gp0_command & 0x02000000)
+            transparency = 0.5;
+
+      // add to triangle buffer.
+      GLfloat triangle[] = {  x_1, y_1, r_1, g_1, b_1, transparency,
+                              x_2, y_2, r_2, g_2, b_2, transparency,
+                              x_3, y_3, r_3, g_3, b_3, transparency,
+                              x_2, y_2, r_2, g_2, b_2, transparency,
+                              x_3, y_3, r_3, g_3, b_3, transparency,
+                              x_4, y_4, r_4, g_4, b_4, transparency };
+      triangle_buffer.insert(triangle_buffer.end(), triangle, std::end(triangle));
+
+      //glBufferSubData(GL_ARRAY_BUFFER, tri_ptr, sizeof(triangle), triangle);
+      //glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      // use shader (maybe not until render time?)
+            // maybe make use of vao here.
+      // might need to store meta data about triangle, eg:
+            // primitive_list->add(triangle)
+            // vertex_count += 3
+
+      triangle_count += 2;
+      refresh_ready = true;
+
+      return 0;
+}
+unsigned glgpu::gradTex4Polygon()
+{
+      return 0;
+}
+
+unsigned glgpu::monoLine()
+{
+      return 0;
+}
+unsigned glgpu::monoPolyLine()
+{
+      return 0;
+}
+unsigned glgpu::gradLine()
+{
+      return 0;
+}
+unsigned glgpu::gradPolyLine()
+{
+      return 0;
+}
+
+unsigned glgpu::rect()
+{
+      return 0;
+}
+unsigned glgpu::sprite()
+{
+      return 0;
+}
+unsigned glgpu::dot()
+{
+      return 0;
+}
+
+unsigned glgpu::rect8()
+{
+      return 0;
+}
+unsigned glgpu::sprite8()
+{
+      return 0;
+}
+unsigned glgpu::rect16()
+{
+      return 0;
+}
+unsigned glgpu::sprite16()
+{
+      return 0;
+}
 
 
 
