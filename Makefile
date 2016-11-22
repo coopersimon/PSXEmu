@@ -4,9 +4,13 @@ CXXFLAGS=-std=c++11 -Iinclude -Wall -g
 CPULINK=target/Memory.o target/Coprocessor.o target/SCC.o target/FixedPointMaths.o target/GTE.o target/CPU.o
 TESTCPULINK=test/cpu/src/TestCPU.o target/Memory.o target/Coprocessor.o target/SCC.o target/FixedPointMaths.o target/GTE.o target/CPU.o
 TESTGTELINK=test/gte/src/TestGTE.o target/Coprocessor.o target/FixedPointMaths.o target/GTE.o
+LINUXGLLIBS=--static -L/usr/local/lib -L/usr/lib64 -lGLEW -lGLU -lglfw3 -lrt -lm -lGL -ldl -ldrm -lXdamage -lXrandr -lXinerama -lXxf86vm -lXest -lXcursor -lXrender -lXfixes -lX11 -lX11-xcb -lpthread -lxcb -lxcb-glx -lxcb-dri2 -lXau -lXdmcp
+GLFW3=-L/usr/local/lib -lglfw3 -lrt -lm -ldl -lXrandr -lXinerama -lXxf86vm -lXext -lXcursor -lXrender -lXfixes -lX11 -lpthread -lxcb -lXau -lXdmcp
+GLEW=-L/usr/lib64 -Wl,-rpath,lib -lGLEW -lGLU -lm -lGL -lm -lpthread -ldl -ldrm -lXdamage -lXfixes -lX11-xcb -lxcb-glx -lxcb-dri2 -lXxf86vm -lXext -lX11 -lpthread -lxcb -lXau -lXdmcp
+
 
 # MAIN BUILDS
-testall : testcpu testgte
+testall : testcpu testgte testgpu
 
 testcpu : \
 test/cpu/bin/ADD_1 test/cpu/bin/ADD_2 test/cpu/bin/ADD_3 test/cpu/bin/ADD_4 test/cpu/bin/ADD_5 test/cpu/bin/ADD_6 \
@@ -26,6 +30,8 @@ test/gte/bin/NCLIP_1 \
 test/gte/bin/MVMVA_1 test/gte/bin/MVMVA_2 test/gte/bin/MVMVA_3 \
 test/gte/bin/CC_1 \
 test/gte/bin/NCS_1
+
+testgpu : test/gpu/bin/testgpu
 
 
 # TEST CPU
@@ -148,6 +154,9 @@ test/gte/bin/CC_1 : test/gte/src/CC_1.cpp $(TESTGTELINK)
 test/gte/bin/NCS_1 : test/gte/src/NCS_1.cpp $(TESTGTELINK)
 	$(CXX) $(CXXFLAGS) test/gte/src/NCS_1.cpp $(TESTGTELINK) -o $@
 
+# TEST GPU
+test/gpu/bin/testgpu : test/gpu/src/test.cpp target/GLGPU.o
+	$(CXX) $(CXXFLAGS) test/gpu/src/test.cpp target/GLGPU.o $(GLEW) $(GLFW3) -o $@
 
 # OBJECT FILES
 target/Memory.o : src/Memory.cpp include/Memory.h include/PSException.h
@@ -168,6 +177,9 @@ target/GTE.o : src/GTE.cpp include/GTE.h
 target/CPU.o : src/CPU.cpp include/CPU.h
 	$(CXX) $(CXXFLAGS) -c src/CPU.cpp -o $@
 
+target/GLGPU.o : src/GLGPU.cpp include/GLGPU.h
+	$(CXX) $(CXXFLAGS) -c src/GLGPU.cpp -o $@
+
 
 # HEADER DEPENDENCIES
 include/Register.h : include/Memory.h
@@ -182,6 +194,9 @@ include/GTE.h : include/Coprocessor.h include/FixedPointMaths.h
 
 include/CPU.h : include/SCC.h include/GTE.h
 
+include/DMA.h : include/Memory.h
+
+include/GLGPU.h : include/DMA.h include/FIFO.h
 
 # CLEAN
 clean : cleantarget cleancputest cleangtetest
@@ -196,3 +211,6 @@ cleancputest :
 cleangtetest :
 	rm test/gte/src/*.o
 	rm test/gte/bin/*
+
+cleangputest :
+	rm test/gpu/bin/*

@@ -1,5 +1,14 @@
 #include <GLGPU.h>
 #include <string>
+#include <iostream>
+#include <iterator>
+
+
+static const std::string vertex_shader_source =
+      "#version 330\nin vec2 position;\nin vec3 color;\nout vec3 frag_color;\nvoid main()\n{\nfrag_color = color;\ngl_Position = vec4(position, 0.0, 1.0);\n}";
+
+static const std::string fragment_shader_source = 
+      "#version 330\nin vec3 frag_color;\nout vec4 outColor;\nvoid main()\n{\noutColor = vec4(frag_color, 1.0);\n}";
 
 // TODO: gpu errors
 glgpu::glgpu()
@@ -10,10 +19,15 @@ glgpu::glgpu()
             // throw error
       }
 
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+      glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+      //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
       window = glfwCreateWindow(320, 240, "PSXEmu", NULL, NULL);
       glfwMakeContextCurrent(window);
       
-      if (glewInit != GLEW_OK)
+      glewExperimental = true;
+      if (glewInit() != GLEW_OK)
       {
             // throw error
       }
@@ -24,12 +38,23 @@ glgpu::glgpu()
       glGenBuffers(1, &vertex_buffer);
       glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
       // buffer may need to be setup later?
-      //glBufferData(GL_ARRAY_BUFFER, );
-      gourad_shader = compileShader(vertex_shader_source, fragment_shader_source);
+      //glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat[100000]), NULL, GL_STREAM_DRAW);
+
+      gourad_shader = compileShader(vertex_shader_source.c_str(), fragment_shader_source.c_str());
+      glUseProgram(gourad_shader);
+
+      GLint position_attr = glGetAttribLocation(gourad_shader, "position");
+      glEnableVertexAttribArray(position_attr);
+      glVertexAttribPointer(position_attr, 2, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)0);
+
+      GLint colour_attr = glGetAttribLocation(gourad_shader, "color");
+      glEnableVertexAttribArray(colour_attr);
+      glVertexAttribPointer(colour_attr, 3, GL_FLOAT, GL_FALSE, 5*sizeof(float), (void*)(2*sizeof(float)));
+
 
       // registers & function pointer(s)
 
-      gp0_command = {
+      /*gp0_command = {
             &glgpu::RESERVED, &glgpu::clearCache, &glgpu::frameBufferRectDraw, &glgpu::RESERVED,
             &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
             &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
@@ -101,12 +126,25 @@ glgpu::glgpu()
             &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
             &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED,
             &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED, &glgpu::RESERVED
-      };
+      };*/
 
       //gp1_command
 
       // other status
       params_rem = 0;
+      //command_buffer = FIFOImpl<word>(16);
+      refresh_ready = false;
+      glfwSetTime(0);
+      total_time = 0;
+      total_poly = 0;
+
+      draw_x_left = 0;
+      draw_x_right = 320;
+      draw_y_top = 0;
+      draw_y_bottom = 240;
+      offset_x = 0;
+      offset_y = 0;
+      glClear(GL_COLOR_BUFFER_BIT);
 }
 
 glgpu::~glgpu()
@@ -118,29 +156,58 @@ glgpu::~glgpu()
       glfwTerminate();
 }
 
+bool glgpu::refreshWindow()
+{
+      glfwPollEvents();
+      if (glfwWindowShouldClose(window) || glfwGetTime() >= 100.0)
+      {
+            std::cout << total_poly / 100 << std::endl;
+            glfwDestroyWindow(window);
+            return false;
+      }
+
+      //while(refresh_ready)
+      //{
+            if (glfwGetTime() >= 0.0333 + total_time)
+            {
+                  total_time += 0.0333;
+                  refresh_ready = false;
+                  glBufferData(GL_ARRAY_BUFFER, triangle_buffer.size()*sizeof(GLfloat), triangle_buffer.data(), GL_STATIC_DRAW);
+                  glDrawArrays(GL_TRIANGLES, 0, 3*triangle_count);
+                  triangle_count = 0;
+                  triangle_buffer.clear();
+                  glfwSwapBuffers(window);
+                  glClear(GL_COLOR_BUFFER_BIT);
+            }
+      //}
+
+      return true;
+}
+
 // interface functions
-void wordFromDMA(word in)
+void glgpu::wordFromDMA(word in)
 {
       if (params_rem > 0)
       {
             command_buffer.write(in);
             params_rem--;
             if (params_rem == 0)
-                  gp0[gp0_command](this);
+                  //gp0[gp0_command](this);
+                  mono3Polygon();
       }
       else
       {
             gp0_command = (in >> 24) & 0xFF;
-            params_rem = gp0[gp0_command](this);
+            params_rem = /*gp0[gp0_command](this);*/ mono3Polygon();
       }
 }
 
-word wordToDMA()
+word glgpu::wordToDMA()
 {
       return gpu_response;
 }
 
-word readWord(unsigned address)
+word glgpu::readWord(unsigned address)
 {
       if (address % 2 == 0)
       {
@@ -148,11 +215,12 @@ word readWord(unsigned address)
       }
       else
       {
+            return 0;
             // make and return GPUstat
       }
 }
 
-void writeWord(unsigned address, word in)
+void glgpu::writeWord(unsigned address, word in)
 {
       if (address % 2 == 0)
       {
@@ -162,18 +230,19 @@ void writeWord(unsigned address, word in)
                   command_buffer.write(in);
                   params_rem--;
                   if (params_rem == 0)
-                        gp0[(gp0_command >> 24) & 0xFF](this);
+                        //gp0[(gp0_command >> 24) & 0xFF](this);
+                        mono3Polygon();
             }
             else
             {
                   gp0_command = in;
-                  params_rem = gp0[(gp0_command >> 24) & 0xFF](this);
+                  params_rem = /*gp0[(gp0_command >> 24) & 0xFF](this);*/ mono3Polygon();
             }
       }
       else
       {
             // gp1 command
-            gp1[(in >> 24) % 0x20](this, in);
+            //gp1[(in >> 24) % 0x20](this, in);
       }
 }
 
@@ -188,6 +257,7 @@ GLuint glgpu::compileShader(const char* vertex_shader_source, const char* fragme
       glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &status);
       if (status != GL_TRUE)
       {
+            std::cout << "shader fuckup 1" << std::endl;
             // throw error
       }
 
@@ -197,6 +267,7 @@ GLuint glgpu::compileShader(const char* vertex_shader_source, const char* fragme
       glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &status);
       if (status != GL_TRUE)
       {
+            std::cout << "shader fuckup 2" << std::endl;
             // throw error
       }
       
@@ -208,13 +279,13 @@ GLuint glgpu::compileShader(const char* vertex_shader_source, const char* fragme
 
       glDetachShader(shader_program, vertex_shader);
       glDetachShader(shader_program, fragment_shader);
-      glDeleteShader(shader_program, vertex_shader);
-      glDeleteShader(shader_program, fragment_shader);
+      glDeleteShader(vertex_shader);
+      glDeleteShader(fragment_shader);
 
       return shader_program;
 }
 
-GLfloat convertXCoord(s_halfword in)
+GLfloat glgpu::convertXCoord(s_halfword in)
 {
       // get co-ords normalised to 0 at left.
       in += offset_x;
@@ -231,7 +302,7 @@ GLfloat convertXCoord(s_halfword in)
       return out;
 }
 
-GLfloat convertYCoord(s_halfword in)
+GLfloat glgpu::convertYCoord(s_halfword in)
 {
       // get co-ords normalised to 0 at left.
       in += offset_y;
@@ -261,7 +332,24 @@ in / draw_x_right - draw_x
 0,0 -> -1.0, 1.0
 
 */
-void setWindowResolution()
+
+GLfloat glgpu::convertColour(byte in)
+{
+      // 0-15 -> 0.0-0.66, 16-31 -> 0.66-1.0
+      GLfloat result = in / 23.0;
+
+      if (result > 0.67)
+      {
+            in -= 16;
+            result = in / 48.0;
+            result += 0.6875;
+      }
+
+      return result;
+}
+
+
+void glgpu::setWindowResolution()
 {
       unsigned hor_res;
       unsigned vert_res;
@@ -409,33 +497,58 @@ void glgpu::gpuInfo(unsigned param)
 }
 
 
-void RESERVED()
+unsigned RESERVED()
 {
-      return;
+      return 0;
 }
 
 
 
 
 // primitive drawing
-void glgpu::mono3Polygon()
+unsigned glgpu::mono3Polygon()
 {
-      // retrieve arguments
-      // vertex_1, 2, 3
+      if (command_buffer.size() < 3)
+            return 3;
 
+      // retrieve arguments
+      word vertex_1 = command_buffer.read();
+      word vertex_2 = command_buffer.read();
+      word vertex_3 = command_buffer.read();
 
       // convert x & y input to float. likely a complex function of its own
-      //GLfloat x_1 = convertXCoord(s_halfword(vertex_1 & 0xFFFF));
-      //GLfloat y_1 = convertYCoord(s_halfword((vertex_1 >> 16) & 0xFFFF));
-      // ...
+      GLfloat x_1 = convertXCoord(s_halfword(vertex_1 & 0xFFFF));
+      GLfloat y_1 = convertYCoord(s_halfword((vertex_1 >> 16) & 0xFFFF));
+      GLfloat x_2 = convertXCoord(s_halfword(vertex_2 & 0xFFFF));
+      GLfloat y_2 = convertYCoord(s_halfword((vertex_2 >> 16) & 0xFFFF));
+      GLfloat x_3 = convertXCoord(s_halfword(vertex_3 & 0xFFFF));
+      GLfloat y_3 = convertYCoord(s_halfword((vertex_3 >> 16) & 0xFFFF));
+
+      // convert colour
+      GLfloat r = convertColour((gp0_command >> 3) & 0x1F);
+      GLfloat g = convertColour((gp0_command >> 11) & 0x1F);
+      GLfloat b = convertColour((gp0_command >> 19) & 0x1F);
+
       // add to triangle buffer.
-      // const GLFloat triangle[] = {x,y,r,g,b}
-      // glBufferSubData(...)
-      // use shader (maybe not until render time?) at the very least, attach it.
+      GLfloat triangle[] = {  x_1, y_1, r, g, b,
+                              x_2, y_2, r, g, b,
+                              x_3, y_3, r, g, b };
+      triangle_buffer.insert(triangle_buffer.end(), triangle, std::end(triangle));
+
+      //glBufferSubData(GL_ARRAY_BUFFER, tri_ptr, sizeof(triangle), triangle);
+      //glDrawArrays(GL_TRIANGLES, 0, 3);
+
+      // use shader (maybe not until render time?)
             // maybe make use of vao here.
-      // add to buffer: we may need to add some sort of vertex counter for later rendering
-      // primitive_list->add(triangle)
-      // vertex_count += 3
+      // might need to store meta data about triangle, eg:
+            // primitive_list->add(triangle)
+            // vertex_count += 3
+
+      triangle_count++;
+      total_poly++;
+      refresh_ready = true;
+
+      return 0;
 }
 
 
@@ -453,83 +566,94 @@ void glgpu::mono3Polygon()
 
 
 
-// command & transfer packets
-void glgpu::clearCache()
+// gp0_command & transfer packets
+unsigned glgpu::clearCache()
 {
       // do nothing?
       // glClearBufferData(?)
+      return 0;
 }
 
-void glgpu::frameBufferRectDraw()
+unsigned glgpu::frameBufferRectDraw()
 {
       // convert values to float,
       // render rectangle in buffer
+      return 0;
 }
 
-void glgpu::copyInVRAM()
+unsigned glgpu::copyInVRAM()
 {
       // check WHERE in frame buffer is being accessed
       // tex->tex: adjust texture page
       // frame->frame: (do nothing? or render to screen?)
       // other: may need to access glFrameBuffer
+      return 0;
 }
 
-void glgpu::copyToVRAM()
+unsigned glgpu::copyToVRAM()
 {
+      return 0;
 }
 
-void glgpu::copyFromVRAM()
+unsigned glgpu::copyFromVRAM()
 {
+      return 0;
 }
 
 
 // draw mode/environment
-void glgpu::drawMode()
+unsigned glgpu::drawMode()
 {
-      texture_page_x_base = command & 0xF;
-      texture_page_y_base = (command >> 4) & 0x1;
-      semi_transparency = (command >> 5) & 0x3;
-      texture_page_colours = (command >> 7) & 0x3;
-      dither_enable = (command >> 9) & 0x1;
-      draw_to_display_area = (command >> 10) & 0x1;
-      texture_disable = (command >> 11) & 0x1;
+      texture_page_x_base = gp0_command & 0xF;
+      texture_page_y_base = (gp0_command >> 4) & 0x1;
+      semi_transparency = (gp0_command >> 5) & 0x3;
+      texture_page_colours = (gp0_command >> 7) & 0x3;
+      dither_enable = (gp0_command >> 9) & 0x1;
+      draw_to_display_area = (gp0_command >> 10) & 0x1;
+      texture_disable = (gp0_command >> 11) & 0x1;
       // x and y flip?
+      return 0;
 }
 
-void glgpu::textureWindow()
+unsigned glgpu::textureWindow()
 {
-      tex_mask_x = command & 0x1F;
-      tex_mask_y = (command >> 5) & 0x1F;
-      tex_offset_x = (command >> 10) & 0x1F;
-      tex_offset_y = (command >> 15) & 0x1F;
+      tex_mask_x = gp0_command & 0x1F;
+      tex_mask_y = (gp0_command >> 5) & 0x1F;
+      tex_offset_x = (gp0_command >> 10) & 0x1F;
+      tex_offset_y = (gp0_command >> 15) & 0x1F;
+      return 0;
 }
 
-void glgpu::setDrawTopLeft()
+unsigned glgpu::setDrawTopLeft()
 {
-      draw_x_left = command & 0x3FF;
-      draw_y_top = (command >> 10) & 0x1FF;
+      draw_x_left = gp0_command & 0x3FF;
+      draw_y_top = (gp0_command >> 10) & 0x1FF;
       // viewport?
+      return 0;
 }
 
-void glgpu::setDrawBottomRight()
+unsigned glgpu::setDrawBottomRight()
 {
-      draw_x_right = command & 0x3FF;
-      draw_y_bottom = (command >> 10) & 0x1FF;
+      draw_x_right = gp0_command & 0x3FF;
+      draw_y_bottom = (gp0_command >> 10) & 0x1FF;
       // viewport?
+      return 0;
 }
 
-void glgpu::drawingOffset()
+unsigned glgpu::drawingOffset()
 {
-      x_offset = command & 0x7FF;
-      x_offset = (x_offset << 21) >> 21;
-      y_offset = (command >> 11) & 0x7FF;
-      y_offset = (y_offset << 21) >> 21;
+      offset_x = gp0_command & 0x7FF;
+      offset_x = (offset_x << 21) >> 21;
+      offset_y = (gp0_command >> 11) & 0x7FF;
+      offset_y = (offset_y << 21) >> 21;
+      return 0;
 }
 
-void glgpu::maskSetting()
+unsigned glgpu::maskSetting()
 {
-      set_mask_bit = command & 0x1;
-      draw_pixels = (command >> 1) & 0x1;
+      set_mask_bit = gp0_command & 0x1;
+      draw_pixels = (gp0_command >> 1) & 0x1;
+      return 0;
 }
 
 

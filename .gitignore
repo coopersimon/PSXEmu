@@ -5,3 +5,4 @@ test/cpu/bin/*
 test/gte/src/*.o
 test/gte/bin/*
 .txt
+lib/*

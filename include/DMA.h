@@ -72,17 +72,17 @@ public:
       // transfers a block between RAM and device 
       void transferBlock();
 
-      enum DMAReg
+      /*enum DMAReg
       {
-            DMABase = 0;
-            DMABlockControl = 1;
-            DMAChannelControl = 2;
-      };
+            DMABase = 0,
+            DMABlockControl = 1,
+            DMAChannelControl = 2
+      };*/
 
       // write base address, block control or channel control.
-      void writeRegister(word data, DMAReg reg);
+      void writeRegister(word data, unsigned reg);
       // read base address, block control or channel control.
-      word readRegister(DMAReg reg);
+      word readRegister(unsigned reg);
 
 private:
       // transfers a single word from RAM, into device

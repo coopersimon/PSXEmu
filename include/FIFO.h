@@ -20,6 +20,7 @@ class FIFOImpl
       unsigned fifo_capacity;
 
 public:
+      FIFOImpl() : fifo_capacity(16) {}
       FIFOImpl(unsigned capacity_in) : fifo_capacity(capacity_in) {}
 
       // writes data to back of FIFO
